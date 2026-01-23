@@ -1,0 +1,97 @@
+## Build outputs
+**/bin/
+**/obj/
+**/publish/
+
+## User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Visual Studio
+.vs/
+*.vsidx
+*.vspscc
+*.vssscc
+*.vsp
+*.vspx
+*.sap
+
+## Visual Studio Code
+.vscode/
+*.code-workspace
+
+## Rider
+.idea/
+*.sln.iml
+
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## .NET
+project.lock.json
+project.fragment.lock.json
+artifacts/
+**/Properties/launchSettings.json
+
+## NuGet
+*.nupkg
+*.snupkg
+**/packages/*
+*.nuget.props
+*.nuget.targets
+.nuget/
+
+## Test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+*.coverage
+*.coveragexml
+
+## Temporary files
+*.tmp
+*.temp
+*.cache
+*.log
+*.bak
+*.swp
+*~
+
+## OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+## Publish profiles
+**/PublishProfiles/
+
+## Application files
+*.exe.config
+*.dll.config
+
+## Backup files
+*_backup/
+*.orig
+
+## WPF temporary files
+*_wpftmp.csproj
+
+## User setups (don't commit user-generated setups)
+/setups/*.ini
+
+## Documentation build outputs
+docs/_build/

@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="AssettoApp.Core/AssettoApp.Core.csproj" />
+  <Project Path="AssettoApp.SetupGeneration/AssettoApp.SetupGeneration.csproj" />
+  <Project Path="AssettoApp.SimulatorIntegration/AssettoApp.SimulatorIntegration.csproj" />
+  <Project Path="AssettoApp.TelemetryAnalysis/AssettoApp.TelemetryAnalysis.csproj" />
+  <Project Path="AssettoApp.UI/AssettoApp.UI.csproj" />
+</Solution>

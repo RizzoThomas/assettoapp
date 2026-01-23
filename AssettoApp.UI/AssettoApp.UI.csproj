@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LiveCharts.Wpf" Version="0.9.7" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AssettoApp.Core\AssettoApp.Core.csproj" />
+    <ProjectReference Include="..\AssettoApp.SimulatorIntegration\AssettoApp.SimulatorIntegration.csproj" />
+    <ProjectReference Include="..\AssettoApp.TelemetryAnalysis\AssettoApp.TelemetryAnalysis.csproj" />
+    <ProjectReference Include="..\AssettoApp.SetupGeneration\AssettoApp.SetupGeneration.csproj" />
+  </ItemGroup>
+
+</Project>
