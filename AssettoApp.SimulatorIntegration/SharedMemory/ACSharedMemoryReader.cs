@@ -38,6 +38,19 @@ public class ACSharedMemoryReader : IDisposable
         }
         catch (FileNotFoundException)
         {
+            // Shared memory files not found - AC is not in an active session
+            _isConnected = false;
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Permission denied - try running as administrator
+            _isConnected = false;
+            return false;
+        }
+        catch (Exception)
+        {
+            // Other errors (I/O errors, etc.)
             _isConnected = false;
             return false;
         }

@@ -324,7 +324,8 @@ public class MainViewModel : ViewModelBase
                                    "Please ensure:\n" +
                                    "1. Assetto Corsa is running\n" +
                                    "2. You are currently in a session (Practice, Race, etc.)\n" +
-                                   "3. You are on track driving (not in the menu)\n\n" +
+                                   "3. You are on track driving (not in the menu)\n" +
+                                   "4. If still failing, try running AssettoApp as Administrator\n\n" +
                                    "Note: Shared memory is only available when actively driving.";
                 }
                 else
