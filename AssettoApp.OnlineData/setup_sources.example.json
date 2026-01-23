@@ -1,0 +1,34 @@
+[
+  {
+    "SourceName": "RaceDepartment",
+    "BaseUrl": "https://www.racedepartment.com",
+    "SearchUrlPattern": "https://www.racedepartment.com/downloads/categories/ac-setups.23/?q={car}+{track}",
+    "SetupItemSelector": "//div[contains(@class, 'structItem')]",
+    "TitleSelector": ".//h3[@class='structItem-title']//a",
+    "AuthorSelector": ".//a[contains(@class, 'username')]",
+    "DownloadLinkSelector": ".//h3[@class='structItem-title']//a/@href",
+    "RatingSelector": ".//span[@class='rating-value']",
+    "DownloadCountSelector": ".//span[contains(@class, 'download-count')]",
+    "MinRequestDelayMs": 2000,
+    "MaxRequestsPerMinute": 20,
+    "RequiresAuthentication": false,
+    "ApiKey": null,
+    "IsEnabled": false
+  },
+  {
+    "SourceName": "Setup Market",
+    "BaseUrl": "https://setupmarket.io",
+    "SearchUrlPattern": "https://setupmarket.io/setups?game=assetto-corsa&car={car}&track={track}",
+    "SetupItemSelector": "//div[contains(@class, 'setup-card')]",
+    "TitleSelector": ".//h3[@class='setup-title']",
+    "AuthorSelector": ".//span[@class='author-name']",
+    "DownloadLinkSelector": ".//a[@class='download-link']/@href",
+    "RatingSelector": ".//span[@class='rating']",
+    "DownloadCountSelector": ".//span[@class='downloads']",
+    "MinRequestDelayMs": 1000,
+    "MaxRequestsPerMinute": 30,
+    "RequiresAuthentication": false,
+    "ApiKey": null,
+    "IsEnabled": false
+  }
+]
