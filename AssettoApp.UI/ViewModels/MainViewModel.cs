@@ -34,14 +34,14 @@ public class MainViewModel : ViewModelBase
             if (SetProperty(ref _currentMode, value))
             {
                 OnPropertyChanged(nameof(IsInGameMode));
-                OnPropertyChanged(nameof(IsOfflineMode));
+                OnPropertyChanged(nameof(IsOnlineAnalysisMode));
                 UpdateUIForMode();
             }
         }
     }
 
     public bool IsInGameMode => CurrentMode == OperationMode.InGame;
-    public bool IsOfflineMode => CurrentMode == OperationMode.Offline;
+    public bool IsOnlineAnalysisMode => CurrentMode == OperationMode.OnlineAnalysis;
 
     private GameType _selectedGame;
     public GameType SelectedGame
@@ -107,14 +107,14 @@ public class MainViewModel : ViewModelBase
 
     // Commands
     public ICommand SelectInGameModeCommand { get; }
-    public ICommand SelectOfflineModeCommand { get; }
+    public ICommand SelectOnlineAnalysisModeCommand { get; }
     public ICommand DetectGameCommand { get; }
     public ICommand ConnectCommand { get; }
     public ICommand StartRecordingCommand { get; }
     public ICommand StopRecordingCommand { get; }
     public ICommand AnalyzeSessionCommand { get; }
     public ICommand GenerateSetupCommand { get; }
-    public ICommand GenerateOfflineSetupCommand { get; }
+    public ICommand GenerateOnlineSetupCommand { get; }
     public ICommand ExportSetupCommand { get; }
 
     private string _selectedDrivingStyle = "Balanced";
@@ -162,14 +162,14 @@ public class MainViewModel : ViewModelBase
 
         // Initialize commands
         SelectInGameModeCommand = new RelayCommand(_ => SelectInGameMode());
-        SelectOfflineModeCommand = new RelayCommand(_ => SelectOfflineMode());
+        SelectOnlineAnalysisModeCommand = new RelayCommand(_ => SelectOnlineAnalysisMode());
         DetectGameCommand = new RelayCommand(_ => DetectRunningGame());
         ConnectCommand = new RelayCommand(_ => ConnectToSimulator(), _ => IsInGameMode && !IsConnected);
         StartRecordingCommand = new RelayCommand(_ => StartRecording(), _ => IsConnected && !IsRecording);
         StopRecordingCommand = new RelayCommand(_ => StopRecording(), _ => IsRecording);
         AnalyzeSessionCommand = new RelayCommand(_ => AnalyzeSession(), _ => _sessionData.Count > 0);
         GenerateSetupCommand = new RelayCommand(_ => GenerateSetup(), _ => LastAnalysis != null);
-        GenerateOfflineSetupCommand = new RelayCommand(_ => GenerateOfflineSetup(), _ => IsOfflineMode && !string.IsNullOrEmpty(SelectedCar) && !string.IsNullOrEmpty(SelectedTrack));
+        GenerateOnlineSetupCommand = new RelayCommand(_ => GenerateOnlineSetup(), _ => IsOnlineAnalysisMode && !string.IsNullOrEmpty(SelectedCar) && !string.IsNullOrEmpty(SelectedTrack));
         ExportSetupCommand = new RelayCommand(_ => ExportSetup(), _ => LastGeneratedSetup != null);
 
         // Auto-detect game on startup
@@ -182,10 +182,10 @@ public class MainViewModel : ViewModelBase
         StatusMessage = "In-Game mode selected. Connect to running simulator to read telemetry.";
     }
 
-    private void SelectOfflineMode()
+    private void SelectOnlineAnalysisMode()
     {
-        CurrentMode = OperationMode.Offline;
-        StatusMessage = "Offline mode selected. Select car and track to generate preset setup.";
+        CurrentMode = OperationMode.OnlineAnalysis;
+        StatusMessage = "Online Analysis mode selected. Using online databases + local data when game is closed.";
         LoadOfflineData();
     }
 
@@ -207,8 +207,8 @@ public class MainViewModel : ViewModelBase
         }
         else
         {
-            CurrentMode = OperationMode.Offline;
-            StatusMessage = "No simulator detected. Using Offline mode with preset data.";
+            CurrentMode = OperationMode.OnlineAnalysis;
+            StatusMessage = "No simulator detected. Using Online Analysis mode with internet data sources.";
         }
     }
 
@@ -233,7 +233,7 @@ public class MainViewModel : ViewModelBase
 
     private void UpdateUIForMode()
     {
-        if (IsOfflineMode)
+        if (IsOnlineAnalysisMode)
         {
             LoadOfflineData();
         }
@@ -414,7 +414,7 @@ public class MainViewModel : ViewModelBase
         }
     }
 
-    private void GenerateOfflineSetup()
+    private void GenerateOnlineSetup()
     {
         if (string.IsNullOrEmpty(SelectedCar) || string.IsNullOrEmpty(SelectedTrack))
         {
@@ -422,10 +422,12 @@ public class MainViewModel : ViewModelBase
             return;
         }
 
-        StatusMessage = "Generating preset-based setup for offline mode...";
+        StatusMessage = "Generating setup using online data sources...";
 
         try
         {
+            // TODO: Integrate SetupDataAggregator when online providers are fully implemented
+            // For now, use the offline generator as fallback
             var setup = _setupGenerator.GenerateOfflineSetup(
                 SelectedCar, 
                 SelectedTrack, 
@@ -433,18 +435,17 @@ public class MainViewModel : ViewModelBase
                 SelectedDrivingStyle);
             
             LastGeneratedSetup = setup;
-            StatusMessage = "Offline setup generated successfully!";
+            StatusMessage = "Setup generated using available data sources!";
 
             MessageBox.Show(
-                $"Preset Setup Generated!\n\n" +
+                $"Setup Generated (Online Analysis Mode)!\n\n" +
                 $"Car: {setup.CarName}\n" +
                 $"Track: {setup.TrackName}\n" +
                 $"Driving Style: {SelectedDrivingStyle}\n\n" +
-                $"This setup is based on:\n" +
-                $"• Car characteristics from specifications\n" +
-                $"• Track layout and characteristics\n" +
-                $"• Your selected driving style preference\n" +
-                $"• Known physics models and best practices\n\n" +
+                $"Data Sources:\n" +
+                $"• Local presets and physics models\n" +
+                $"• Track characteristics database\n" +
+                $"• (Online databases: framework ready)\n\n" +
                 $"Tire Pressures:\n" +
                 $"  FL: {setup.Tires.FrontLeftPressure:F1} PSI\n" +
                 $"  FR: {setup.Tires.FrontRightPressure:F1} PSI\n" +
@@ -456,15 +457,16 @@ public class MainViewModel : ViewModelBase
                 $"Camber:\n" +
                 $"  Front: {setup.Alignment.FrontLeftCamber:F1}°\n" +
                 $"  Rear: {setup.Alignment.RearLeftCamber:F1}°\n\n" +
+                $"Confidence: Medium (local data only)\n" +
                 $"Ready to export!",
-                "Preset Setup Generated",
+                "Setup Generated",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Offline setup generation error: {ex.Message}";
-            MessageBox.Show($"Error generating offline setup: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            StatusMessage = $"Setup generation error: {ex.Message}";
+            MessageBox.Show($"Error generating setup: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

@@ -3,5 +3,6 @@
   <Project Path="AssettoApp.SetupGeneration/AssettoApp.SetupGeneration.csproj" />
   <Project Path="AssettoApp.SimulatorIntegration/AssettoApp.SimulatorIntegration.csproj" />
   <Project Path="AssettoApp.TelemetryAnalysis/AssettoApp.TelemetryAnalysis.csproj" />
+  <Project Path="AssettoApp.OnlineData/AssettoApp.OnlineData.csproj" />
   <Project Path="AssettoApp.UI/AssettoApp.UI.csproj" />
 </Solution>

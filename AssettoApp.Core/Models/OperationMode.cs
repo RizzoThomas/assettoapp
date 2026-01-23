@@ -11,7 +11,8 @@ public enum OperationMode
     InGame,
     
     /// <summary>
-    /// Offline mode: Simulator not running, uses preset data and manual selection
+    /// Online Analysis mode: Simulator not running, uses online data sources + local presets
+    /// Internet connection available for fetching setup databases and community data
     /// </summary>
-    Offline
+    OnlineAnalysis
 }

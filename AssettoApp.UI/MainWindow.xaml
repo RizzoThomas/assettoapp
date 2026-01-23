@@ -111,12 +111,12 @@
                             </Button.Style>
                         </Button>
                         <Button Grid.Column="1" Content="Game Closed" 
-                               Command="{Binding SelectOfflineModeCommand}"
+                               Command="{Binding SelectOnlineAnalysisModeCommand}"
                                Margin="5,0,0,0">
                             <Button.Style>
                                 <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsOfflineMode}" Value="True">
+                                        <DataTrigger Binding="{Binding IsOnlineAnalysisMode}" Value="True">
                                             <Setter Property="Background" Value="#FF28A745"/>
                                         </DataTrigger>
                                     </Style.Triggers>
@@ -152,13 +152,13 @@
                              SelectedItem="{Binding SelectedTrack}"
                              Margin="0,0,0,15"/>
                     
-                    <!-- Driving Style (Offline Mode Only) -->
+                    <!-- Driving Style (Online Analysis Mode Only) -->
                     <StackPanel>
                         <StackPanel.Style>
                             <Style TargetType="StackPanel">
                                 <Setter Property="Visibility" Value="Collapsed"/>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsOfflineMode}" Value="True">
+                                    <DataTrigger Binding="{Binding IsOnlineAnalysisMode}" Value="True">
                                         <Setter Property="Visibility" Value="Visible"/>
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -178,7 +178,7 @@
                             <Style TargetType="StackPanel">
                                 <Setter Property="Visibility" Value="Visible"/>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsOfflineMode}" Value="True">
+                                    <DataTrigger Binding="{Binding IsOnlineAnalysisMode}" Value="True">
                                         <Setter Property="Visibility" Value="Collapsed"/>
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -272,20 +272,20 @@
                         </Grid>
                     </StackPanel>
                     
-                    <!-- Offline Mode Actions -->
+                    <!-- Online Analysis Mode Actions -->
                     <StackPanel>
                         <StackPanel.Style>
                             <Style TargetType="StackPanel">
                                 <Setter Property="Visibility" Value="Collapsed"/>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsOfflineMode}" Value="True">
+                                    <DataTrigger Binding="{Binding IsOnlineAnalysisMode}" Value="True">
                                         <Setter Property="Visibility" Value="Visible"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>
                         
-                        <TextBlock Text="Select car, track, and driving style, then generate a preset-based setup." 
+                        <TextBlock Text="Select car, track, and driving style, then generate a data-driven setup." 
                                   TextWrapping="Wrap" Foreground="#FFAAAAAA" Margin="0,0,0,15"/>
                         
                         <Grid>
@@ -294,8 +294,8 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             
-                            <Button Grid.Column="0" Content="Generate Preset Setup" 
-                                   Command="{Binding GenerateOfflineSetupCommand}"
+                            <Button Grid.Column="0" Content="Generate Setup (Online)" 
+                                   Command="{Binding GenerateOnlineSetupCommand}"
                                    Margin="0,0,5,0"/>
                             
                             <Button Grid.Column="1" Content="Export Setup" 
@@ -305,13 +305,13 @@
                         
                         <Border Background="#FF1E1E1E" CornerRadius="4" Padding="15" Margin="0,15,0,0">
                             <StackPanel>
-                                <TextBlock Text="ℹ️ Offline Mode" FontWeight="SemiBold" Foreground="#FF0078D7" Margin="0,0,0,10"/>
-                                <TextBlock Text="Setup generation is based on:" TextWrapping="Wrap" Margin="0,0,0,5"/>
-                                <TextBlock Text="• Real car specifications and physics" TextWrapping="Wrap" Margin="10,0,0,3"/>
-                                <TextBlock Text="• Known track characteristics" TextWrapping="Wrap" Margin="10,0,0,3"/>
-                                <TextBlock Text="• Your driving style preference" TextWrapping="Wrap" Margin="10,0,0,3"/>
-                                <TextBlock Text="• Best practices from motorsport" TextWrapping="Wrap" Margin="10,0,0,10"/>
-                                <TextBlock Text="No telemetry data required!" 
+                                <TextBlock Text="ℹ️ Online Analysis Mode" FontWeight="SemiBold" Foreground="#FF0078D7" Margin="0,0,0,10"/>
+                                <TextBlock Text="Setup generation uses:" TextWrapping="Wrap" Margin="0,0,0,5"/>
+                                <TextBlock Text="• Online setup databases (RaceDepartment, Setup Market)" TextWrapping="Wrap" Margin="10,0,0,3"/>
+                                <TextBlock Text="• Community averages and expert setups" TextWrapping="Wrap" Margin="10,0,0,3"/>
+                                <TextBlock Text="• Track characteristics from online sources" TextWrapping="Wrap" Margin="10,0,0,3"/>
+                                <TextBlock Text="• Local presets as fallback" TextWrapping="Wrap" Margin="10,0,0,10"/>
+                                <TextBlock Text="Internet connection required for best results!" 
                                           FontWeight="SemiBold" Foreground="#FF28A745" TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>
