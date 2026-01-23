@@ -78,18 +78,18 @@ public class LapTracker : ILapTracker
             AirTemperature = telemetry.AirTemperature,
             TrackGrip = telemetry.TrackGrip,
             FuelAtStart = telemetry.Fuel,
-            TireWearStart = new TireWearSnapshot
+            TireWearStart = telemetry.Tires != null && telemetry.Tires.Length == 4 ? new TireWearSnapshot
             {
                 Timestamp = DateTime.UtcNow,
-                FrontLeftWear = telemetry.Tires[0].Wear,
-                FrontRightWear = telemetry.Tires[1].Wear,
-                RearLeftWear = telemetry.Tires[2].Wear,
-                RearRightWear = telemetry.Tires[3].Wear,
-                FrontLeftTemp = telemetry.Tires[0].Temperature,
-                FrontRightTemp = telemetry.Tires[1].Temperature,
-                RearLeftTemp = telemetry.Tires[2].Temperature,
-                RearRightTemp = telemetry.Tires[3].Temperature
-            }
+                FrontLeftWear = telemetry.Tires[0]?.Wear ?? 0,
+                FrontRightWear = telemetry.Tires[1]?.Wear ?? 0,
+                RearLeftWear = telemetry.Tires[2]?.Wear ?? 0,
+                RearRightWear = telemetry.Tires[3]?.Wear ?? 0,
+                FrontLeftTemp = telemetry.Tires[0]?.Temperature ?? 0,
+                FrontRightTemp = telemetry.Tires[1]?.Temperature ?? 0,
+                RearLeftTemp = telemetry.Tires[2]?.Temperature ?? 0,
+                RearRightTemp = telemetry.Tires[3]?.Temperature ?? 0
+            } : null
         };
     }
 
@@ -113,18 +113,18 @@ public class LapTracker : ILapTracker
         _currentLap.FuelAtEnd = finalTelemetry.Fuel;
         
         // Calculate tire wear at lap end
-        _currentLap.TireWearEnd = new TireWearSnapshot
+        _currentLap.TireWearEnd = finalTelemetry.Tires != null && finalTelemetry.Tires.Length == 4 ? new TireWearSnapshot
         {
             Timestamp = DateTime.UtcNow,
-            FrontLeftWear = finalTelemetry.Tires[0].Wear,
-            FrontRightWear = finalTelemetry.Tires[1].Wear,
-            RearLeftWear = finalTelemetry.Tires[2].Wear,
-            RearRightWear = finalTelemetry.Tires[3].Wear,
-            FrontLeftTemp = finalTelemetry.Tires[0].Temperature,
-            FrontRightTemp = finalTelemetry.Tires[1].Temperature,
-            RearLeftTemp = finalTelemetry.Tires[2].Temperature,
-            RearRightTemp = finalTelemetry.Tires[3].Temperature
-        };
+            FrontLeftWear = finalTelemetry.Tires[0]?.Wear ?? 0,
+            FrontRightWear = finalTelemetry.Tires[1]?.Wear ?? 0,
+            RearLeftWear = finalTelemetry.Tires[2]?.Wear ?? 0,
+            RearRightWear = finalTelemetry.Tires[3]?.Wear ?? 0,
+            FrontLeftTemp = finalTelemetry.Tires[0]?.Temperature ?? 0,
+            FrontRightTemp = finalTelemetry.Tires[1]?.Temperature ?? 0,
+            RearLeftTemp = finalTelemetry.Tires[2]?.Temperature ?? 0,
+            RearRightTemp = finalTelemetry.Tires[3]?.Temperature ?? 0
+        } : null;
         
         // Calculate lap statistics from telemetry
         if (_currentLapTelemetry.Count > 0)

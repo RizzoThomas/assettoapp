@@ -38,8 +38,10 @@ public class SessionHistoryRepository : ISessionHistoryRepository
             
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            // Log the error for debugging
+            System.Diagnostics.Debug.WriteLine($"Failed to save session: {ex.Message}");
             return false;
         }
     }
@@ -57,8 +59,9 @@ public class SessionHistoryRepository : ISessionHistoryRepository
             var json = await File.ReadAllTextAsync(filePath);
             return JsonSerializer.Deserialize<SessionHistory>(json, JsonOptions);
         }
-        catch
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"Failed to load session {sessionId}: {ex.Message}");
             return null;
         }
     }
@@ -80,17 +83,19 @@ public class SessionHistoryRepository : ISessionHistoryRepository
                     if (session != null)
                         sessions.Add(session);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Skip corrupted files
+                    // Skip corrupted files but log the issue
+                    System.Diagnostics.Debug.WriteLine($"Failed to load session file {file}: {ex.Message}");
                 }
             }
             
             // Sort by session start time, most recent first
             return sessions.OrderByDescending(s => s.SessionStart).ToList();
         }
-        catch
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"Failed to get all sessions: {ex.Message}");
             return sessions;
         }
     }
@@ -116,8 +121,9 @@ public class SessionHistoryRepository : ISessionHistoryRepository
             
             return false;
         }
-        catch
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"Failed to delete session {sessionId}: {ex.Message}");
             return false;
         }
     }

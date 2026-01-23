@@ -433,7 +433,8 @@ public class MainViewModel : ViewModelBase
                     FuelRemaining = telemetry.Fuel;
                     
                     // Update tire wear percentage (average of all tires)
-                    if (telemetry.Tires != null && telemetry.Tires.Length == 4)
+                    if (telemetry.Tires != null && telemetry.Tires.Length == 4 && 
+                        telemetry.Tires.All(t => t != null))
                     {
                         TireWearPercentage = telemetry.Tires.Average(t => t.Wear) * 100f;
                     }
