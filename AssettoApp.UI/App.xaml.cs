@@ -42,6 +42,10 @@ public partial class App : Application
         // Register analyzers and generators
         services.AddSingleton<ITelemetryAnalyzer, TelemetryAnalyzer>();
         services.AddSingleton<ISetupGenerator, SetupGenerator>();
+        
+        // Register lap tracking and session history
+        services.AddSingleton<ILapTracker, LapTracker>();
+        services.AddSingleton<ISessionHistoryRepository, AssettoApp.Core.Repositories.SessionHistoryRepository>();
 
         // Register ViewModels
         services.AddSingleton<MainViewModel>(sp =>
@@ -51,8 +55,10 @@ public partial class App : Application
             var aceConnector = connectors.First(c => c.SupportedGame == GameType.AssettoCorساEvo);
             var analyzer = sp.GetRequiredService<ITelemetryAnalyzer>();
             var generator = sp.GetRequiredService<ISetupGenerator>();
+            var lapTracker = sp.GetRequiredService<ILapTracker>();
+            var sessionRepository = sp.GetRequiredService<ISessionHistoryRepository>();
             
-            return new MainViewModel(acConnector, aceConnector, analyzer, generator);
+            return new MainViewModel(acConnector, aceConnector, analyzer, generator, lapTracker, sessionRepository);
         });
 
         // Register Views

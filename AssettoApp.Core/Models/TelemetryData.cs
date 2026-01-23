@@ -52,6 +52,21 @@ public class TelemetryData
     
     // Understeer/Oversteer indicator
     public float SteeringRatio { get; set; }  // Positive = understeer, Negative = oversteer
+    
+    // Lap tracking
+    public int CurrentLap { get; set; }
+    public TimeSpan CurrentLapTime { get; set; }
+    public TimeSpan? LastLapTime { get; set; }
+    public TimeSpan? BestLapTime { get; set; }
+    public int Sector { get; set; }  // 0-2 (Sector 1, 2, 3)
+    
+    // Lap quality
+    public bool IsLapValid { get; set; } = true;
+    public int TrackLimitViolations { get; set; }
+    
+    // Fuel
+    public float Fuel { get; set; }  // Liters remaining
+    public float MaxFuel { get; set; }  // Tank capacity
 }
 
 /// <summary>

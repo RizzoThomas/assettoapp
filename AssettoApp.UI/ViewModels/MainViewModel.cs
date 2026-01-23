@@ -20,6 +20,8 @@ public class MainViewModel : ViewModelBase
     private readonly ITelemetryAnalyzer _telemetryAnalyzer;
     private readonly ISetupGenerator _setupGenerator;
     private readonly PresetDataRepository _presetRepository;
+    private readonly ILapTracker _lapTracker;
+    private readonly ISessionHistoryRepository _sessionHistoryRepository;
 
     private ISimulatorConnector? _currentConnector;
     private List<TelemetryData> _sessionData = new();
@@ -132,17 +134,64 @@ public class MainViewModel : ViewModelBase
         set => SetProperty(ref _lastGeneratedSetup, value);
     }
 
+    // Lap tracking properties
+    private int _currentLapNumber;
+    public int CurrentLapNumber
+    {
+        get => _currentLapNumber;
+        set => SetProperty(ref _currentLapNumber, value);
+    }
+
+    private TimeSpan _currentLapTime;
+    public TimeSpan CurrentLapTime
+    {
+        get => _currentLapTime;
+        set => SetProperty(ref _currentLapTime, value);
+    }
+
+    private TimeSpan? _bestLapTime;
+    public TimeSpan? BestLapTime
+    {
+        get => _bestLapTime;
+        set => SetProperty(ref _bestLapTime, value);
+    }
+
+    private int _perfectLapsCount;
+    public int PerfectLapsCount
+    {
+        get => _perfectLapsCount;
+        set => SetProperty(ref _perfectLapsCount, value);
+    }
+
+    private float _tireWearPercentage;
+    public float TireWearPercentage
+    {
+        get => _tireWearPercentage;
+        set => SetProperty(ref _tireWearPercentage, value);
+    }
+
+    private float _fuelRemaining;
+    public float FuelRemaining
+    {
+        get => _fuelRemaining;
+        set => SetProperty(ref _fuelRemaining, value);
+    }
+
     public MainViewModel(
         ISimulatorConnector acConnector,
         ISimulatorConnector aceConnector,
         ITelemetryAnalyzer telemetryAnalyzer,
-        ISetupGenerator setupGenerator)
+        ISetupGenerator setupGenerator,
+        ILapTracker lapTracker,
+        ISessionHistoryRepository sessionHistoryRepository)
     {
         _acConnector = acConnector;
         _aceConnector = aceConnector;
         _telemetryAnalyzer = telemetryAnalyzer;
         _setupGenerator = setupGenerator;
         _presetRepository = new PresetDataRepository();
+        _lapTracker = lapTracker;
+        _sessionHistoryRepository = sessionHistoryRepository;
 
         // Initialize collections
         AvailableGames = new ObservableCollection<GameType>
@@ -308,6 +357,12 @@ public class MainViewModel : ViewModelBase
         _sessionData.Clear();
         IsRecording = true;
         StatusMessage = "Recording telemetry...";
+        
+        // Start lap tracking session
+        if (!string.IsNullOrEmpty(SelectedCar) && !string.IsNullOrEmpty(SelectedTrack))
+        {
+            _lapTracker.StartSession(SelectedGame, SelectedCar, SelectedTrack);
+        }
 
         // Start timer to read telemetry every 100ms
         _telemetryTimer = new System.Threading.Timer(
@@ -322,7 +377,31 @@ public class MainViewModel : ViewModelBase
         _telemetryTimer?.Dispose();
         _telemetryTimer = null;
         IsRecording = false;
-        StatusMessage = $"Recording stopped. {_sessionData.Count} data points captured.";
+        
+        // End lap tracking and save session
+        var session = _lapTracker.EndSession();
+        if (session != null)
+        {
+            _ = SaveSessionAsync(session); // Fire and forget
+            StatusMessage = $"Recording stopped. {_sessionData.Count} data points captured. {session.TotalLaps} laps completed. {session.PerfectLaps} perfect laps!";
+        }
+        else
+        {
+            StatusMessage = $"Recording stopped. {_sessionData.Count} data points captured.";
+        }
+    }
+    
+    private async Task SaveSessionAsync(SessionHistory session)
+    {
+        try
+        {
+            await _sessionHistoryRepository.SaveSessionAsync(session);
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't interrupt user
+            System.Diagnostics.Debug.WriteLine($"Error saving session: {ex.Message}");
+        }
     }
 
     private void RecordTelemetry()
@@ -335,6 +414,30 @@ public class MainViewModel : ViewModelBase
             if (telemetry != null)
             {
                 _sessionData.Add(telemetry);
+                
+                // Process telemetry through lap tracker
+                _lapTracker.ProcessTelemetry(telemetry);
+                
+                // Update UI with current lap info (marshal to UI thread)
+                Application.Current?.Dispatcher.Invoke(() =>
+                {
+                    CurrentLapNumber = telemetry.CurrentLap;
+                    CurrentLapTime = telemetry.CurrentLapTime;
+                    FuelRemaining = telemetry.Fuel;
+                    
+                    // Update tire wear percentage (average of all tires)
+                    if (telemetry.Tires != null && telemetry.Tires.Length == 4)
+                    {
+                        TireWearPercentage = telemetry.Tires.Average(t => t.Wear) * 100f;
+                    }
+                    
+                    // Update best lap and perfect laps from session
+                    if (_lapTracker.CurrentSession != null)
+                    {
+                        BestLapTime = _lapTracker.CurrentSession.BestLapTime;
+                        PerfectLapsCount = _lapTracker.CurrentSession.PerfectLaps;
+                    }
+                });
             }
         }
         catch
