@@ -8,8 +8,8 @@ namespace AssettoApp.Core.Utilities;
 /// </summary>
 public static class ProcessDetector
 {
-    private const string ACProcessName = "assettocorsa";
-    private const string ACEProcessName = "assettocorsaevo";
+    private const string ACProcessName = "acs";
+    private const string ACEProcessName = "AssettoCorsaEVO";
 
     /// <summary>
     /// Check if any supported simulator is currently running

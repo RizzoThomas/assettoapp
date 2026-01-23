@@ -24,7 +24,7 @@ public class AssettoCorساConnector : ISimulatorConnector
     public bool IsSimulatorRunning()
     {
         // Check if AC process is running
-        var processes = Process.GetProcessesByName("ac");
+        var processes = Process.GetProcessesByName("acs");
         return processes.Length > 0;
     }
 
