@@ -89,7 +89,8 @@
             
             <!-- Left Panel - Configuration -->
             <Border Grid.Column="0" Background="#FF252526" CornerRadius="8" Padding="20" Margin="0,0,10,0">
-                <StackPanel>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
                     <!-- Mode Selection -->
                     <TextBlock Text="OPERATION MODE" FontWeight="Bold" FontSize="14" Margin="0,0,0,15"/>
                     <Grid Margin="0,0,0,15">
@@ -292,6 +293,7 @@
                         </Border>
                     </StackPanel>
                 </StackPanel>
+                </ScrollViewer>
             </Border>
             
             <!-- Right Panel - Actions and Results -->

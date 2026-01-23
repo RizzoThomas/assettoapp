@@ -16,12 +16,8 @@ public class AssettoCorساEvoConnector : ISimulatorConnector
     public bool IsSimulatorRunning()
     {
         // Check if ACE process is running
-        // Note: Process name may vary - verify with actual ACE installation
-        var processes = Process.GetProcessesByName("AC2");
-        if (processes.Length == 0)
-        {
-            processes = Process.GetProcessesByName("AssettoCorsa2");
-        }
+        // Process name is AssettoCorsaEVO.exe
+        var processes = Process.GetProcessesByName("AssettoCorsaEVO");
         return processes.Length > 0;
     }
 
