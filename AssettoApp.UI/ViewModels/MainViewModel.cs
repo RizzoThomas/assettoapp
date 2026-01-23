@@ -315,8 +315,26 @@ public class MainViewModel : ViewModelBase
             else
             {
                 StatusMessage = "Failed to connect. Is the simulator running?";
+                
+                // Provide specific guidance based on game type
+                string errorMessage;
+                if (SelectedGame == GameType.AssettoCorsaOriginal)
+                {
+                    errorMessage = "Could not connect to Assetto Corsa.\n\n" +
+                                   "Please ensure:\n" +
+                                   "1. Assetto Corsa is running\n" +
+                                   "2. You are currently in a session (Practice, Race, etc.)\n" +
+                                   "3. You are on track driving (not in the menu)\n\n" +
+                                   "Note: Shared memory is only available when actively driving.";
+                }
+                else
+                {
+                    errorMessage = "Could not connect to the simulator.\n\n" +
+                                   "Please ensure it is running and in an active session.";
+                }
+                
                 MessageBox.Show(
-                    "Could not connect to the simulator. Please ensure it is running and try again.",
+                    errorMessage,
                     "Connection Failed",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);

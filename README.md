@@ -80,9 +80,10 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for complete build instructions and techn
 
 ### In-Game Mode (with Telemetry)
 1. Launch Assetto Corsa or Assetto Corsa EVO
-2. Start AssettoApp - it will auto-detect the running game
-3. Click "Connect to Simulator"
-4. Select your car and track
+2. **Start a session and drive on track** (Practice, Race, etc.)
+3. Start AssettoApp - it will auto-detect the running game
+4. Click "Connect to Simulator" 
+   - **Important**: For Assetto Corsa, you must be actively driving on track, not in the menu
 5. Click "Start Recording" and drive several laps
 6. Click "Stop Recording" then "Analyze Session"
 7. Click "Generate Setup" to create optimized settings based on your driving
