@@ -107,6 +107,7 @@ public class MainViewModel : ViewModelBase
     public ObservableCollection<string> AvailableCars { get; }
     public ObservableCollection<string> AvailableTracks { get; }
     public ObservableCollection<string> DrivingStyleOptions { get; }
+    public ObservableCollection<SessionHistory> RecentSessions { get; }
 
     // Commands
     public ICommand SelectInGameModeCommand { get; }
@@ -119,6 +120,7 @@ public class MainViewModel : ViewModelBase
     public ICommand GenerateSetupCommand { get; }
     public ICommand GenerateOnlineSetupCommand { get; }
     public ICommand ExportSetupCommand { get; }
+    public ICommand LoadSessionHistoryCommand { get; }
 
     private string _selectedDrivingStyle = "Balanced";
     public string SelectedDrivingStyle
@@ -209,6 +211,7 @@ public class MainViewModel : ViewModelBase
             "Oversteery",
             "Understeery"
         };
+        RecentSessions = new ObservableCollection<SessionHistory>();
 
         // Initialize commands
         SelectInGameModeCommand = new RelayCommand(_ => SelectInGameMode());
@@ -221,9 +224,13 @@ public class MainViewModel : ViewModelBase
         GenerateSetupCommand = new RelayCommand(_ => GenerateSetup(), _ => LastAnalysis != null);
         GenerateOnlineSetupCommand = new RelayCommand(_ => GenerateOnlineSetup(), _ => IsOnlineAnalysisMode && !string.IsNullOrEmpty(SelectedCar) && !string.IsNullOrEmpty(SelectedTrack));
         ExportSetupCommand = new RelayCommand(_ => ExportSetup(), _ => LastGeneratedSetup != null);
+        LoadSessionHistoryCommand = new RelayCommand(_ => LoadSessionHistory());
 
         // Auto-detect game on startup
         DetectRunningGame();
+        
+        // Load recent sessions
+        LoadSessionHistory();
     }
 
     private void SelectInGameMode()
@@ -656,6 +663,25 @@ public class MainViewModel : ViewModelBase
         {
             StatusMessage = $"Export error: {ex.Message}";
             MessageBox.Show($"Error exporting setup: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+    
+    private async void LoadSessionHistory()
+    {
+        try
+        {
+            var sessions = await _sessionHistoryRepository.GetRecentSessionsAsync(10);
+            
+            RecentSessions.Clear();
+            foreach (var session in sessions)
+            {
+                RecentSessions.Add(session);
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't interrupt user
+            System.Diagnostics.Debug.WriteLine($"Error loading session history: {ex.Message}");
         }
     }
 }

@@ -5,6 +5,8 @@
 AssettoApp is a professional Windows desktop application designed for Assetto Corsa (AC) and Assetto Corsa EVO (ACE) that provides:
 - **Two operational modes**: In-Game (with telemetry) and Offline (preset-based)
 - Real-time telemetry analysis and data-driven setup optimization
+- **Advanced lap tracking** with perfect lap detection, tire wear monitoring, and fuel consumption tracking
+- **Persistent session history** - track your progress even when the game is closed
 - Works both with and without the simulator running
 
 ## ✨ Key Features
@@ -15,16 +17,28 @@ AssettoApp is a professional Windows desktop application designed for Assetto Co
 - **Live telemetry reading** via Shared Memory API
 - **Real-time analysis** of driving behavior
 - **Telemetry-optimized setups** based on actual data
+- **Lap tracking** with perfect lap detection
+- **Live tire wear and fuel monitoring**
 - 60+ parameters analyzed every 100ms
 - Automatic driving style detection
 
 #### Mode B: Offline (Game Closed) 🆕
 - **No simulator required** - works without AC/ACE running
 - **Preset-based generation** using real car/track data
+- **View session history** from previous driving sessions
+- **Track statistics** including perfect laps, tire wear, best lap times
 - Manual selection of car, track, and driving style preference
 - Instant setup generation from physics-based knowledge base
 - **10 real cars** across GT3, GT4, Formula, and Road classes
 - **10 famous tracks** (Spa, Monza, Mugello, Imola, Silverstone, etc.)
+
+### Advanced Telemetry Features 🆕
+- **Perfect Lap Detection**: Automatically identifies laps with no track limit violations and consistent pace
+- **Tire Wear Tracking**: Monitor tire degradation across each tire per lap and session
+- **Fuel Consumption Tracking**: Track fuel usage per lap and estimate remaining laps
+- **Session History**: All sessions are automatically saved and can be reviewed later
+- **Live Statistics**: Real-time display of current lap, best lap, perfect laps count, tire wear %, and fuel remaining
+- **Historical Data Access**: View past sessions even when the game is closed
 
 ### Automatic Game Detection
 - Auto-detects running simulators (`assettocorsa.exe`, `assettocorsaevo.exe`)
