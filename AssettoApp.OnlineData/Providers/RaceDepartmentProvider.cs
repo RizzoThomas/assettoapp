@@ -25,12 +25,12 @@ public class RaceDepartmentProvider : OnlineDataProviderBase
         string trackName,
         CancellationToken cancellationToken = default)
     {
-        // TODO: Implement actual RaceDepartment API integration
-        // This would involve:
-        // 1. Constructing search URL with game/car/track filters
-        // 2. Parsing HTML or JSON response
-        // 3. Extracting setup files or parameters
-        // 4. Converting to OnlineSetupData format
+        // RaceDepartment does not provide a public API
+        // This implementation provides a framework for future integration
+        // when official API becomes available or with user-configured scraping
+        
+        // For now, return empty list - users should configure via ConfigurableScrapingProvider
+        // See SetupSourceConfigManager for example configurations
         
         await Task.Delay(100, cancellationToken); // Simulate API call
         return new List<OnlineSetupData>();
@@ -42,8 +42,8 @@ public class RaceDepartmentProvider : OnlineDataProviderBase
         string trackName,
         CancellationToken cancellationToken = default)
     {
-        // TODO: Implement community average calculation
-        // This would aggregate multiple setups and compute averages
+        // RaceDepartment does not provide community average data via public API
+        // Use ConfigurableScrapingProvider for actual data extraction
         
         await Task.Delay(100, cancellationToken);
         return null;
@@ -53,7 +53,8 @@ public class RaceDepartmentProvider : OnlineDataProviderBase
         string trackName,
         CancellationToken cancellationToken = default)
     {
-        // TODO: Fetch track data from RaceDepartment track database
+        // Track data not available via public API
+        // Falls back to local PresetDataRepository
         
         await Task.Delay(100, cancellationToken);
         return null;
@@ -64,7 +65,8 @@ public class RaceDepartmentProvider : OnlineDataProviderBase
         string carName,
         CancellationToken cancellationToken = default)
     {
-        // TODO: Fetch car specifications from RaceDepartment
+        // Car specifications not available via public API
+        // Falls back to local PresetDataRepository
         
         await Task.Delay(100, cancellationToken);
         return null;

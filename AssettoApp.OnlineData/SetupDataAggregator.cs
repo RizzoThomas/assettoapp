@@ -1,6 +1,7 @@
 using AssettoApp.Core.Interfaces;
 using AssettoApp.Core.Models;
 using AssettoApp.Core.Repositories;
+using AssettoApp.OnlineData.Providers;
 
 namespace AssettoApp.OnlineData;
 
@@ -21,6 +22,19 @@ public class SetupDataAggregator
         _onlineProviders = onlineProviders.ToList();
         _presetRepository = presetRepository;
         _setupGenerator = setupGenerator;
+    }
+
+    /// <summary>
+    /// Create aggregator with all available providers
+    /// </summary>
+    public static SetupDataAggregator CreateWithAllProviders(
+        HttpClient httpClient,
+        PresetDataRepository presetRepository,
+        ISetupGenerator setupGenerator)
+    {
+        var factory = new OnlineDataProviderFactory(httpClient);
+        var providers = factory.CreateAllProviders();
+        return new SetupDataAggregator(providers, presetRepository, setupGenerator);
     }
     
     /// <summary>
@@ -47,8 +61,11 @@ public class SetupDataAggregator
                 if (await provider.IsAvailableAsync())
                 {
                     var setups = await provider.SearchSetupsAsync(gameType, carName, trackName, cancellationToken);
-                    onlineSetups.AddRange(setups);
-                    confidence.SourceContributions[DataSourceType.OnlineDatabase] = 0.4f;
+                    if (setups.Count > 0)
+                    {
+                        onlineSetups.AddRange(setups);
+                        confidence.SourceContributions[DataSourceType.OnlineDatabase] = 0.4f;
+                    }
                 }
             }
             catch (Exception)
@@ -67,6 +84,9 @@ public class SetupDataAggregator
             finalSetup = bestSetup.Setup;
             confidence.OverallScore = bestSetup.ConfidenceScore;
             confidence.RecommendationQuality = bestSetup.ConfidenceScore > 0.7f ? "High" : "Medium";
+            
+            // Add info about which provider was used
+            confidence.MissingDataSources.Add($"Using setup from {bestSetup.Source}");
         }
         else
         {
@@ -75,7 +95,7 @@ public class SetupDataAggregator
             confidence.SourceContributions[DataSourceType.LocalPreset] = 0.6f;
             confidence.OverallScore = 0.5f; // Medium confidence for preset-only
             confidence.RecommendationQuality = "Medium";
-            confidence.MissingDataSources.Add("No online data available");
+            confidence.MissingDataSources.Add("No online data available - using local presets");
         }
         
         return (finalSetup, confidence);
@@ -94,5 +114,28 @@ public class SetupDataAggregator
             }
         }
         return false;
+    }
+
+    /// <summary>
+    /// Get status of all providers
+    /// </summary>
+    public async Task<Dictionary<string, bool>> GetProviderStatusAsync()
+    {
+        var status = new Dictionary<string, bool>();
+        
+        foreach (var provider in _onlineProviders)
+        {
+            try
+            {
+                var available = await provider.IsAvailableAsync();
+                status[provider.ProviderName] = available;
+            }
+            catch
+            {
+                status[provider.ProviderName] = false;
+            }
+        }
+        
+        return status;
     }
 }

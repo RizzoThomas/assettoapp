@@ -4,6 +4,7 @@ using AssettoApp.Core.Utilities;
 using AssettoApp.Core.Repositories;
 using AssettoApp.UI.Commands;
 using System.Collections.ObjectModel;
+using System.Net.Http;
 using System.Windows;
 using System.Windows.Input;
 
@@ -414,7 +415,7 @@ public class MainViewModel : ViewModelBase
         }
     }
 
-    private void GenerateOnlineSetup()
+    private async void GenerateOnlineSetup()
     {
         if (string.IsNullOrEmpty(SelectedCar) || string.IsNullOrEmpty(SelectedTrack))
         {
@@ -426,26 +427,66 @@ public class MainViewModel : ViewModelBase
 
         try
         {
-            // TODO: Integrate SetupDataAggregator when online providers are fully implemented
-            // For now, use the offline generator as fallback
-            var setup = _setupGenerator.GenerateOfflineSetup(
-                SelectedCar, 
-                SelectedTrack, 
-                SelectedGame, 
+            // Create HTTP client for online providers
+            using var httpClient = new HttpClient();
+            httpClient.Timeout = TimeSpan.FromSeconds(30);
+
+            // Create aggregator with all available providers
+            var aggregator = AssettoApp.OnlineData.SetupDataAggregator.CreateWithAllProviders(
+                httpClient,
+                _presetRepository,
+                _setupGenerator);
+
+            // Check if online data is available
+            var onlineAvailable = await aggregator.IsOnlineDataAvailableAsync();
+            var providerStatus = await aggregator.GetProviderStatusAsync();
+
+            // Generate setup with confidence scoring
+            var (setup, confidence) = await aggregator.GenerateSetupWithConfidenceAsync(
+                SelectedGame,
+                SelectedCar,
+                SelectedTrack,
                 SelectedDrivingStyle);
             
             LastGeneratedSetup = setup;
-            StatusMessage = "Setup generated using available data sources!";
+            StatusMessage = "Setup generated successfully!";
+
+            // Build data sources message
+            var dataSourcesText = "Data Sources:\n";
+            if (onlineAvailable)
+            {
+                dataSourcesText += "• Online setup databases (active):\n";
+                foreach (var provider in providerStatus)
+                {
+                    var status = provider.Value ? "✓ Available" : "✗ Unavailable";
+                    dataSourcesText += $"  - {provider.Key}: {status}\n";
+                }
+            }
+            else
+            {
+                dataSourcesText += "• Online setup databases:\n";
+                dataSourcesText += "  - RaceDepartment: Framework ready (configure in setup_sources.json)\n";
+                dataSourcesText += "  - Setup Market: Framework ready (configure in setup_sources.json)\n";
+                dataSourcesText += "  - Custom sources: Configure in %APPDATA%\\AssettoApp\\setup_sources.json\n";
+            }
+            dataSourcesText += "• Local presets and physics models\n";
+            dataSourcesText += "• Track characteristics database\n";
+
+            if (confidence.MissingDataSources.Count > 0)
+            {
+                dataSourcesText += "\nNotes:\n";
+                foreach (var note in confidence.MissingDataSources)
+                {
+                    dataSourcesText += $"• {note}\n";
+                }
+            }
 
             MessageBox.Show(
                 $"Setup Generated (Online Analysis Mode)!\n\n" +
                 $"Car: {setup.CarName}\n" +
                 $"Track: {setup.TrackName}\n" +
                 $"Driving Style: {SelectedDrivingStyle}\n\n" +
-                $"Data Sources:\n" +
-                $"• Local presets and physics models\n" +
-                $"• Track characteristics database\n" +
-                $"• (Online databases: framework ready)\n\n" +
+                dataSourcesText + "\n" +
                 $"Tire Pressures:\n" +
                 $"  FL: {setup.Tires.FrontLeftPressure:F1} PSI\n" +
                 $"  FR: {setup.Tires.FrontRightPressure:F1} PSI\n" +
@@ -457,7 +498,7 @@ public class MainViewModel : ViewModelBase
                 $"Camber:\n" +
                 $"  Front: {setup.Alignment.FrontLeftCamber:F1}°\n" +
                 $"  Rear: {setup.Alignment.RearLeftCamber:F1}°\n\n" +
-                $"Confidence: Medium (local data only)\n" +
+                $"Confidence: {confidence.RecommendationQuality} ({confidence.OverallScore:P0})\n" +
                 $"Ready to export!",
                 "Setup Generated",
                 MessageBoxButton.OK,

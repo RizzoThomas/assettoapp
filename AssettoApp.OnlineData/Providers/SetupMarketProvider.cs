@@ -25,7 +25,12 @@ public class SetupMarketProvider : OnlineDataProviderBase
         string trackName,
         CancellationToken cancellationToken = default)
     {
-        // TODO: Implement Setup Market API integration
+        // Setup Market does not provide a public API
+        // This implementation provides a framework for future integration
+        // when official API becomes available or with user-configured scraping
+        
+        // For now, return empty list - users should configure via ConfigurableScrapingProvider
+        // See SetupSourceConfigManager for example configurations
         
         await Task.Delay(100, cancellationToken);
         return new List<OnlineSetupData>();
@@ -37,7 +42,8 @@ public class SetupMarketProvider : OnlineDataProviderBase
         string trackName,
         CancellationToken cancellationToken = default)
     {
-        // TODO: Implement community average from Setup Market
+        // Setup Market does not provide community average data via public API
+        // Use ConfigurableScrapingProvider for actual data extraction
         
         await Task.Delay(100, cancellationToken);
         return null;
@@ -47,7 +53,8 @@ public class SetupMarketProvider : OnlineDataProviderBase
         string trackName,
         CancellationToken cancellationToken = default)
     {
-        // TODO: Fetch track characteristics
+        // Track data not available via public API
+        // Falls back to local PresetDataRepository
         
         await Task.Delay(100, cancellationToken);
         return null;
@@ -58,7 +65,8 @@ public class SetupMarketProvider : OnlineDataProviderBase
         string carName,
         CancellationToken cancellationToken = default)
     {
-        // TODO: Fetch car specs
+        // Car specifications not available via public API
+        // Falls back to local PresetDataRepository
         
         await Task.Delay(100, cancellationToken);
         return null;

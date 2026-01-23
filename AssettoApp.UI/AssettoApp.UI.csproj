@@ -32,6 +32,7 @@
     <ProjectReference Include="..\AssettoApp.SimulatorIntegration\AssettoApp.SimulatorIntegration.csproj" />
     <ProjectReference Include="..\AssettoApp.TelemetryAnalysis\AssettoApp.TelemetryAnalysis.csproj" />
     <ProjectReference Include="..\AssettoApp.SetupGeneration\AssettoApp.SetupGeneration.csproj" />
+    <ProjectReference Include="..\AssettoApp.OnlineData\AssettoApp.OnlineData.csproj" />
   </ItemGroup>
 
 </Project>
