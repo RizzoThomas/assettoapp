@@ -7,6 +7,19 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    
+    <!-- Application Info -->
+    <AssemblyName>AssettoApp</AssemblyName>
+    <Product>AssettoApp - Telemetry Analysis &amp; Setup Optimizer</Product>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Copyright>Copyright © 2024 Thomas Rizzo</Copyright>
+    <Description>Professional telemetry analysis and setup optimization tool for Assetto Corsa and Assetto Corsa EVO</Description>
+    
+    <!-- Build Options -->
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <TieredCompilation>true</TieredCompilation>
   </PropertyGroup>
 
   <ItemGroup>

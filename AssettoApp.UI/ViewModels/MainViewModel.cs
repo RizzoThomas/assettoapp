@@ -31,7 +31,7 @@ public class MainViewModel : ViewModelBase
             if (SetProperty(ref _selectedGame, value))
             {
                 _currentConnector = value == GameType.AssettoCorsaOriginal ? _acConnector : _aceConnector;
-                UpdateAvailableItems();
+                _ = UpdateAvailableItems(); // Fire and forget - updates UI lists asynchronously
             }
         }
     }

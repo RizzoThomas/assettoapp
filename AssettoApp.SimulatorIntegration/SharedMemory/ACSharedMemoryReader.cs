@@ -24,6 +24,12 @@ public class ACSharedMemoryReader : IDisposable
     {
         try
         {
+            // Platform check - this code only runs on Windows
+            if (!OperatingSystem.IsWindows())
+            {
+                throw new PlatformNotSupportedException("Assetto Corsa shared memory is only available on Windows.");
+            }
+
             _physicsMMF = MemoryMappedFile.OpenExisting(PhysicsMMFName, MemoryMappedFileRights.Read);
             _graphicsMMF = MemoryMappedFile.OpenExisting(GraphicsMMFName, MemoryMappedFileRights.Read);
             _staticMMF = MemoryMappedFile.OpenExisting(StaticMMFName, MemoryMappedFileRights.Read);
