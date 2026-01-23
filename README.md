@@ -2,9 +2,36 @@
 
 ## Overview
 
-AssettoApp is a professional Windows desktop application designed for Assetto Corsa (AC) and Assetto Corsa EVO (ACE) that analyzes real-time telemetry data and generates optimized car setups based on driving style, track conditions, and vehicle behavior.
+AssettoApp is a professional Windows desktop application designed for Assetto Corsa (AC) and Assetto Corsa EVO (ACE) that provides:
+- **Two operational modes**: In-Game (with telemetry) and Offline (preset-based)
+- Real-time telemetry analysis and data-driven setup optimization
+- Works both with and without the simulator running
 
-## Features
+## ✨ Key Features
+
+### Dual Operation Modes
+
+#### Mode A: In-Game (Game Running)
+- **Live telemetry reading** via Shared Memory API
+- **Real-time analysis** of driving behavior
+- **Telemetry-optimized setups** based on actual data
+- 60+ parameters analyzed every 100ms
+- Automatic driving style detection
+
+#### Mode B: Offline (Game Closed) 🆕
+- **No simulator required** - works without AC/ACE running
+- **Preset-based generation** using real car/track data
+- Manual selection of car, track, and driving style preference
+- Instant setup generation from physics-based knowledge base
+- **10 real cars** across GT3, GT4, Formula, and Road classes
+- **10 famous tracks** (Spa, Monza, Mugello, Imola, Silverstone, etc.)
+
+### Automatic Game Detection
+- Auto-detects running simulators (`assettocorsa.exe`, `assettocorsaevo.exe`)
+- Suggests appropriate mode based on detection
+- Manual override always available
+
+### Comprehensive Features
 
 - **Dual Simulator Support**: Works with both Assetto Corsa and Assetto Corsa EVO
 - **Real-Time Telemetry Analysis**: Reads actual data from shared memory
@@ -37,14 +64,27 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for complete build instructions and techn
 
 ## Quick Start
 
+### In-Game Mode (with Telemetry)
 1. Launch Assetto Corsa or Assetto Corsa EVO
-2. Start AssettoApp
-3. Select your game and click "Connect to Simulator"
+2. Start AssettoApp - it will auto-detect the running game
+3. Click "Connect to Simulator"
 4. Select your car and track
 5. Click "Start Recording" and drive several laps
 6. Click "Stop Recording" then "Analyze Session"
-7. Click "Generate Setup" to create optimized settings
+7. Click "Generate Setup" to create optimized settings based on your driving
 8. Click "Export Setup" to save the configuration file
+
+### Offline Mode (without Game Running)
+1. Start AssettoApp without the simulator
+2. Application enters Offline Mode automatically
+3. Select game, car, track, and driving style preference
+4. Click "Generate Preset Setup" - instant generation!
+5. Review the physics-based setup parameters
+6. Click "Export Setup" to save for later use
+
+### Manual Mode Switching
+- Use **"Game Open"** / **"Game Closed"** buttons to switch modes manually
+- Click **"🔍 Auto-Detect Running Game"** button to automatically detect and switch
 
 ## Known Limitations
 
@@ -67,8 +107,11 @@ AssettoApp/
 
 ## Documentation
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) - Complete technical architecture and API documentation
-- [BUILD.md](BUILD.md) - Detailed build and deployment instructions
+- **[OFFLINE_MODE_IT.md](OFFLINE_MODE_IT.md)** - Complete Italian documentation for Offline Mode (Mode B)
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Complete technical architecture and API documentation
+- **[BUILD.md](BUILD.md)** - Detailed build and deployment instructions
+- **[IMPLEMENTAZIONE_IT.md](IMPLEMENTAZIONE_IT.md)** - Italian implementation summary
+- **[PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)** - Project file inventory and metrics
 
 ## License
 
