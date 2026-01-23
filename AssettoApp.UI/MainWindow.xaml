@@ -90,6 +90,48 @@
             <!-- Left Panel - Configuration -->
             <Border Grid.Column="0" Background="#FF252526" CornerRadius="8" Padding="20" Margin="0,0,10,0">
                 <StackPanel>
+                    <!-- Mode Selection -->
+                    <TextBlock Text="OPERATION MODE" FontWeight="Bold" FontSize="14" Margin="0,0,0,15"/>
+                    <Grid Margin="0,0,0,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Content="Game Open" 
+                               Command="{Binding SelectInGameModeCommand}"
+                               Margin="0,0,5,0">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsInGameMode}" Value="True">
+                                            <Setter Property="Background" Value="#FF28A745"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button Grid.Column="1" Content="Game Closed" 
+                               Command="{Binding SelectOfflineModeCommand}"
+                               Margin="5,0,0,0">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsOfflineMode}" Value="True">
+                                            <Setter Property="Background" Value="#FF28A745"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </Grid>
+                    
+                    <Button Content="🔍 Auto-Detect Running Game" 
+                           Command="{Binding DetectGameCommand}"
+                           Style="{StaticResource SecondaryButton}"
+                           Margin="0,0,0,20"/>
+                    
+                    <Separator Margin="0,5,0,15" Background="#FF3F3F46"/>
+                    
                     <TextBlock Text="CONFIGURATION" FontWeight="Bold" FontSize="14" Margin="0,0,0,15"/>
                     
                     <!-- Game Selection -->
@@ -108,82 +150,172 @@
                     <TextBlock Text="Track:" Margin="0,0,0,5"/>
                     <ComboBox ItemsSource="{Binding AvailableTracks}" 
                              SelectedItem="{Binding SelectedTrack}"
-                             Margin="0,0,0,20"/>
+                             Margin="0,0,0,15"/>
                     
-                    <Separator Margin="0,10" Background="#FF3F3F46"/>
-                    
-                    <!-- Connection -->
-                    <TextBlock Text="CONNECTION" FontWeight="Bold" FontSize="14" Margin="0,10,0,15"/>
-                    <Button Content="Connect to Simulator" 
-                           Command="{Binding ConnectCommand}"
-                           Margin="0,0,0,10"/>
-                    
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
-                        <Ellipse Width="12" Height="12" Margin="0,0,8,0">
-                            <Ellipse.Style>
-                                <Style TargetType="Ellipse">
-                                    <Setter Property="Fill" Value="#FFDC3545"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsConnected}" Value="True">
-                                            <Setter Property="Fill" Value="#FF28A745"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Ellipse.Style>
-                        </Ellipse>
-                        <TextBlock>
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Text" Value="Status: Disconnected"/>
-                                    <Setter Property="Foreground" Value="White"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsConnected}" Value="True">
-                                            <Setter Property="Text" Value="Status: Connected"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                    <!-- Driving Style (Offline Mode Only) -->
+                    <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsOfflineMode}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock Text="Driving Style Preference:" Margin="0,0,0,5"/>
+                        <ComboBox ItemsSource="{Binding DrivingStyleOptions}" 
+                                 SelectedItem="{Binding SelectedDrivingStyle}"
+                                 Margin="0,0,0,15"/>
                     </StackPanel>
                     
                     <Separator Margin="0,10" Background="#FF3F3F46"/>
                     
-                    <!-- Recording Controls -->
-                    <TextBlock Text="DATA RECORDING" FontWeight="Bold" FontSize="14" Margin="0,10,0,15"/>
-                    <Button Content="Start Recording" 
-                           Command="{Binding StartRecordingCommand}"
-                           Margin="0,0,0,10"/>
-                    <Button Content="Stop Recording" 
-                           Command="{Binding StopRecordingCommand}"
-                           Style="{StaticResource DangerButton}"
-                           Margin="0,0,0,20"/>
+                    <!-- Connection (In-Game Mode Only) -->
+                    <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsOfflineMode}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        
+                        <TextBlock Text="CONNECTION" FontWeight="Bold" FontSize="14" Margin="0,10,0,15"/>
+                        <Button Content="Connect to Simulator" 
+                               Command="{Binding ConnectCommand}"
+                               Margin="0,0,0,10"/>
+                        
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                            <Ellipse Width="12" Height="12" Margin="0,0,8,0">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Fill" Value="#FFDC3545"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                <Setter Property="Fill" Value="#FF28A745"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+                            <TextBlock>
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="Status: Disconnected"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                <Setter Property="Text" Value="Status: Connected"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                        
+                        <Separator Margin="0,10" Background="#FF3F3F46"/>
+                        
+                        <!-- Recording Controls -->
+                        <TextBlock Text="DATA RECORDING" FontWeight="Bold" FontSize="14" Margin="0,10,0,15"/>
+                        <Button Content="Start Recording" 
+                               Command="{Binding StartRecordingCommand}"
+                               Margin="0,0,0,10"/>
+                        <Button Content="Stop Recording" 
+                               Command="{Binding StopRecordingCommand}"
+                               Style="{StaticResource DangerButton}"
+                               Margin="0,0,0,20"/>
+                    </StackPanel>
                 </StackPanel>
             </Border>
             
             <!-- Right Panel - Actions and Results -->
             <Border Grid.Column="1" Background="#FF252526" CornerRadius="8" Padding="20" Margin="10,0,0,0">
                 <StackPanel>
-                    <TextBlock Text="ANALYSIS &amp; SETUP GENERATION" FontWeight="Bold" FontSize="14" Margin="0,0,0,20"/>
+                    <TextBlock Text="SETUP GENERATION" FontWeight="Bold" FontSize="14" Margin="0,0,0,20"/>
                     
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                    <!-- In-Game Mode Actions -->
+                    <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsOfflineMode}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
                         
-                        <Button Grid.Column="0" Content="Analyze Session" 
-                               Command="{Binding AnalyzeSessionCommand}"
-                               Margin="0,0,5,0"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <Button Grid.Column="0" Content="Analyze Session" 
+                                   Command="{Binding AnalyzeSessionCommand}"
+                                   Margin="0,0,5,0"/>
+                            
+                            <Button Grid.Column="1" Content="Generate Setup" 
+                                   Command="{Binding GenerateSetupCommand}"
+                                   Margin="5,0,5,0"/>
+                            
+                            <Button Grid.Column="2" Content="Export Setup" 
+                                   Command="{Binding ExportSetupCommand}"
+                                   Margin="5,0,0,0"/>
+                        </Grid>
+                    </StackPanel>
+                    
+                    <!-- Offline Mode Actions -->
+                    <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsOfflineMode}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
                         
-                        <Button Grid.Column="1" Content="Generate Setup" 
-                               Command="{Binding GenerateSetupCommand}"
-                               Margin="5,0,5,0"/>
+                        <TextBlock Text="Select car, track, and driving style, then generate a preset-based setup." 
+                                  TextWrapping="Wrap" Foreground="#FFAAAAAA" Margin="0,0,0,15"/>
                         
-                        <Button Grid.Column="2" Content="Export Setup" 
-                               Command="{Binding ExportSetupCommand}"
-                               Margin="5,0,0,0"/>
-                    </Grid>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <Button Grid.Column="0" Content="Generate Preset Setup" 
+                                   Command="{Binding GenerateOfflineSetupCommand}"
+                                   Margin="0,0,5,0"/>
+                            
+                            <Button Grid.Column="1" Content="Export Setup" 
+                                   Command="{Binding ExportSetupCommand}"
+                                   Margin="5,0,0,0"/>
+                        </Grid>
+                        
+                        <Border Background="#FF1E1E1E" CornerRadius="4" Padding="15" Margin="0,15,0,0">
+                            <StackPanel>
+                                <TextBlock Text="ℹ️ Offline Mode" FontWeight="SemiBold" Foreground="#FF0078D7" Margin="0,0,0,10"/>
+                                <TextBlock Text="Setup generation is based on:" TextWrapping="Wrap" Margin="0,0,0,5"/>
+                                <TextBlock Text="• Real car specifications and physics" TextWrapping="Wrap" Margin="10,0,0,3"/>
+                                <TextBlock Text="• Known track characteristics" TextWrapping="Wrap" Margin="10,0,0,3"/>
+                                <TextBlock Text="• Your driving style preference" TextWrapping="Wrap" Margin="10,0,0,3"/>
+                                <TextBlock Text="• Best practices from motorsport" TextWrapping="Wrap" Margin="10,0,0,10"/>
+                                <TextBlock Text="No telemetry data required!" 
+                                          FontWeight="SemiBold" Foreground="#FF28A745" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
                     
                     <Separator Margin="0,25" Background="#FF3F3F46"/>
                     

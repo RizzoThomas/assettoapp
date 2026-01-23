@@ -1,15 +1,23 @@
 using AssettoApp.Core.Interfaces;
 using AssettoApp.Core.Models;
+using AssettoApp.Core.Repositories;
 using System.Text;
 
 namespace AssettoApp.SetupGeneration;
 
 /// <summary>
-/// Generates optimized car setups based on telemetry analysis
+/// Generates optimized car setups based on telemetry analysis or preset data
 /// Uses data-driven approach to adjust setup parameters
 /// </summary>
 public class SetupGenerator : ISetupGenerator
 {
+    private readonly PresetDataRepository _presetRepository;
+
+    public SetupGenerator()
+    {
+        _presetRepository = new PresetDataRepository();
+    }
+
     public CarSetup GenerateSetup(
         TelemetryAnalysisResult analysisResult,
         string carName,
@@ -44,6 +52,268 @@ public class SetupGenerator : ISetupGenerator
 
         // Optimize brake balance
         OptimizeBrakes(setup, analysisResult.BalanceAnalysis);
+
+        return setup;
+    }
+
+    /// <summary>
+    /// Generate setup for offline mode using preset data
+    /// No telemetry required - uses car and track characteristics
+    /// </summary>
+    public CarSetup GenerateOfflineSetup(
+        string carName,
+        string trackName,
+        GameType gameType,
+        string drivingStylePreference = "Balanced")
+    {
+        var setup = new CarSetup
+        {
+            CarName = carName,
+            TrackName = trackName,
+            GameType = gameType,
+            CreatedAt = DateTime.Now
+        };
+
+        // Get preset data
+        var carPreset = _presetRepository.GetCarPreset(carName);
+        var trackPreset = _presetRepository.GetTrackPreset(trackName);
+
+        if (carPreset == null || trackPreset == null)
+        {
+            // Fallback to generic setup if presets not found
+            return GenerateFallbackSetup(setup);
+        }
+
+        // Apply car-specific defaults
+        setup.Suspension.FrontSpringRate = carPreset.DefaultFrontSpring;
+        setup.Suspension.RearSpringRate = carPreset.DefaultRearSpring;
+        setup.Alignment.FrontLeftCamber = carPreset.DefaultFrontCamber;
+        setup.Alignment.FrontRightCamber = carPreset.DefaultFrontCamber;
+        setup.Alignment.RearLeftCamber = carPreset.DefaultRearCamber;
+        setup.Alignment.RearRightCamber = carPreset.DefaultRearCamber;
+        setup.Aerodynamics.FrontWing = carPreset.DefaultFrontWing;
+        setup.Aerodynamics.RearWing = carPreset.DefaultRearWing;
+
+        // Adjust for track characteristics
+        ApplyTrackCharacteristics(setup, trackPreset, carPreset);
+
+        // Apply driving style preference
+        ApplyDrivingStylePreference(setup, drivingStylePreference);
+
+        // Set remaining parameters to safe defaults
+        SetDefaultParameters(setup);
+
+        return setup;
+    }
+
+    private void ApplyTrackCharacteristics(
+        CarSetup setup,
+        PresetSetupData.TrackPreset trackPreset,
+        PresetSetupData.CarPreset carPreset)
+    {
+        // Aero adjustments based on track type
+        switch (trackPreset.AeroLevel)
+        {
+            case "Low": // High-speed tracks like Monza
+                setup.Aerodynamics.FrontWing = Math.Max(0, carPreset.DefaultFrontWing - 1);
+                setup.Aerodynamics.RearWing = Math.Max(0, carPreset.DefaultRearWing - 2);
+                setup.Suspension.FrontRideHeight = 58.0f; // Higher for less drag
+                setup.Suspension.RearRideHeight = 63.0f;
+                break;
+
+            case "High": // Downforce tracks like Mugello, Silverstone
+                setup.Aerodynamics.FrontWing = Math.Min(10, carPreset.DefaultFrontWing + 1);
+                setup.Aerodynamics.RearWing = Math.Min(12, carPreset.DefaultRearWing + 1);
+                setup.Suspension.FrontRideHeight = 52.0f; // Lower for more downforce
+                setup.Suspension.RearRideHeight = 57.0f;
+                break;
+
+            default: // "Medium" - balanced
+                setup.Suspension.FrontRideHeight = 55.0f;
+                setup.Suspension.RearRideHeight = 60.0f;
+                break;
+        }
+
+        // Suspension stiffness adjustments
+        switch (trackPreset.SuspensionStiffness)
+        {
+            case "Soft": // Bumpy or kerb-heavy tracks
+                setup.Suspension.FrontSpringRate -= 5.0f;
+                setup.Suspension.RearSpringRate -= 5.0f;
+                setup.Suspension.FrontBumpDamping = 5;
+                setup.Suspension.FrontReboundDamping = 6;
+                setup.Suspension.RearBumpDamping = 5;
+                setup.Suspension.RearReboundDamping = 6;
+                break;
+
+            case "Stiff": // Smooth tracks with elevation changes
+                setup.Suspension.FrontSpringRate += 5.0f;
+                setup.Suspension.RearSpringRate += 5.0f;
+                setup.Suspension.FrontBumpDamping = 7;
+                setup.Suspension.FrontReboundDamping = 8;
+                setup.Suspension.RearBumpDamping = 7;
+                setup.Suspension.RearReboundDamping = 8;
+                break;
+
+            default: // "Medium"
+                setup.Suspension.FrontBumpDamping = 6;
+                setup.Suspension.FrontReboundDamping = 7;
+                setup.Suspension.RearBumpDamping = 6;
+                setup.Suspension.RearReboundDamping = 7;
+                break;
+        }
+
+        // Gear ratios - optimize final drive for longest straight
+        if (trackPreset.LongestStraightKm > 1.5f) // Long straights
+        {
+            // Longer gearing for top speed
+            setup.Transmission.FinalDrive = 2.8f;
+        }
+        else if (trackPreset.LongestStraightKm < 0.7f) // Short straights
+        {
+            // Shorter gearing for acceleration
+            setup.Transmission.FinalDrive = 3.5f;
+        }
+        else
+        {
+            setup.Transmission.FinalDrive = 3.2f; // Balanced
+        }
+    }
+
+    private void ApplyDrivingStylePreference(CarSetup setup, string stylePreference)
+    {
+        switch (stylePreference.ToLower())
+        {
+            case "aggressive":
+                // Stiffer setup for aggressive inputs
+                setup.Suspension.FrontSpringRate += 5.0f;
+                setup.Suspension.RearSpringRate += 5.0f;
+                setup.Differential.PowerRamp += 5.0f;
+                setup.AntiRollBars.Front = Math.Min(7, setup.AntiRollBars.Front + 1);
+                setup.AntiRollBars.Rear = Math.Min(7, setup.AntiRollBars.Rear + 1);
+                break;
+
+            case "smooth":
+                // Softer setup for smooth driving
+                setup.Suspension.FrontSpringRate -= 5.0f;
+                setup.Suspension.RearSpringRate -= 5.0f;
+                setup.Differential.PowerRamp -= 5.0f;
+                setup.AntiRollBars.Front = Math.Max(1, setup.AntiRollBars.Front - 1);
+                setup.AntiRollBars.Rear = Math.Max(1, setup.AntiRollBars.Rear - 1);
+                break;
+
+            case "oversteery":
+                // Setup promoting rotation
+                setup.Differential.PowerRamp += 10.0f;
+                setup.AntiRollBars.Front = Math.Max(1, setup.AntiRollBars.Front - 1);
+                setup.AntiRollBars.Rear = Math.Min(7, setup.AntiRollBars.Rear + 1);
+                setup.Aerodynamics.RearWing = Math.Max(0, setup.Aerodynamics.RearWing - 1);
+                setup.Brakes.BrakeBias += 0.02f;
+                break;
+
+            case "understeery":
+                // Stable setup with less rotation
+                setup.Differential.PowerRamp -= 10.0f;
+                setup.AntiRollBars.Front = Math.Min(7, setup.AntiRollBars.Front + 1);
+                setup.AntiRollBars.Rear = Math.Max(1, setup.AntiRollBars.Rear - 1);
+                setup.Aerodynamics.FrontWing = Math.Min(10, setup.Aerodynamics.FrontWing + 1);
+                setup.Brakes.BrakeBias -= 0.02f;
+                break;
+
+            default: // "balanced"
+                // Keep defaults
+                break;
+        }
+    }
+
+    private void SetDefaultParameters(CarSetup setup)
+    {
+        // Tire pressures - safe starting point
+        if (setup.Tires.FrontLeftPressure == 0)
+        {
+            setup.Tires.FrontLeftPressure = 26.0f;
+            setup.Tires.FrontRightPressure = 26.0f;
+            setup.Tires.RearLeftPressure = 26.0f;
+            setup.Tires.RearRightPressure = 26.0f;
+        }
+
+        // Differential defaults if not set
+        if (setup.Differential.Preload == 0)
+        {
+            setup.Differential.Preload = 50.0f;
+            setup.Differential.PowerRamp = 60.0f;
+            setup.Differential.CoastRamp = 40.0f;
+        }
+
+        // Anti-roll bars defaults
+        if (setup.AntiRollBars.Front == 0)
+        {
+            setup.AntiRollBars.Front = 3;
+            setup.AntiRollBars.Rear = 3;
+        }
+
+        // Alignment defaults
+        if (setup.Alignment.FrontLeftToe == 0)
+        {
+            setup.Alignment.FrontLeftToe = 0.05f;
+            setup.Alignment.FrontRightToe = 0.05f;
+            setup.Alignment.RearLeftToe = 0.1f;
+            setup.Alignment.RearRightToe = 0.1f;
+            setup.Alignment.FrontCaster = 11.0f;
+        }
+
+        // Brakes defaults
+        if (setup.Brakes.BrakeBias == 0)
+        {
+            setup.Brakes.BrakeBias = 0.56f;
+            setup.Brakes.BrakePressure = 100.0f;
+        }
+
+        // Ensure bounds
+        setup.Brakes.BrakeBias = Math.Clamp(setup.Brakes.BrakeBias, 0.5f, 0.65f);
+    }
+
+    private CarSetup GenerateFallbackSetup(CarSetup setup)
+    {
+        // Generic GT3-style setup when no presets available
+        setup.Tires.FrontLeftPressure = 26.0f;
+        setup.Tires.FrontRightPressure = 26.0f;
+        setup.Tires.RearLeftPressure = 26.0f;
+        setup.Tires.RearRightPressure = 26.0f;
+
+        setup.Suspension.FrontSpringRate = 80.0f;
+        setup.Suspension.RearSpringRate = 85.0f;
+        setup.Suspension.FrontBumpDamping = 6;
+        setup.Suspension.FrontReboundDamping = 7;
+        setup.Suspension.RearBumpDamping = 6;
+        setup.Suspension.RearReboundDamping = 7;
+        setup.Suspension.FrontRideHeight = 55.0f;
+        setup.Suspension.RearRideHeight = 60.0f;
+
+        setup.Aerodynamics.FrontWing = 3;
+        setup.Aerodynamics.RearWing = 5;
+
+        setup.Differential.Preload = 50.0f;
+        setup.Differential.PowerRamp = 60.0f;
+        setup.Differential.CoastRamp = 40.0f;
+
+        setup.AntiRollBars.Front = 3;
+        setup.AntiRollBars.Rear = 3;
+
+        setup.Alignment.FrontLeftCamber = -2.8f;
+        setup.Alignment.FrontRightCamber = -2.8f;
+        setup.Alignment.RearLeftCamber = -2.5f;
+        setup.Alignment.RearRightCamber = -2.5f;
+        setup.Alignment.FrontLeftToe = 0.05f;
+        setup.Alignment.FrontRightToe = 0.05f;
+        setup.Alignment.RearLeftToe = 0.1f;
+        setup.Alignment.RearRightToe = 0.1f;
+        setup.Alignment.FrontCaster = 11.0f;
+
+        setup.Brakes.BrakeBias = 0.56f;
+        setup.Brakes.BrakePressure = 100.0f;
+
+        setup.Transmission.FinalDrive = 3.2f;
 
         return setup;
     }

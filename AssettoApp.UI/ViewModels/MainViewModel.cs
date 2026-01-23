@@ -1,5 +1,7 @@
 using AssettoApp.Core.Interfaces;
 using AssettoApp.Core.Models;
+using AssettoApp.Core.Utilities;
+using AssettoApp.Core.Repositories;
 using AssettoApp.UI.Commands;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -16,12 +18,31 @@ public class MainViewModel : ViewModelBase
     private readonly ISimulatorConnector _aceConnector;
     private readonly ITelemetryAnalyzer _telemetryAnalyzer;
     private readonly ISetupGenerator _setupGenerator;
+    private readonly PresetDataRepository _presetRepository;
 
     private ISimulatorConnector? _currentConnector;
     private List<TelemetryData> _sessionData = new();
     private System.Threading.Timer? _telemetryTimer;
 
     // Properties
+    private OperationMode _currentMode;
+    public OperationMode CurrentMode
+    {
+        get => _currentMode;
+        set
+        {
+            if (SetProperty(ref _currentMode, value))
+            {
+                OnPropertyChanged(nameof(IsInGameMode));
+                OnPropertyChanged(nameof(IsOfflineMode));
+                UpdateUIForMode();
+            }
+        }
+    }
+
+    public bool IsInGameMode => CurrentMode == OperationMode.InGame;
+    public bool IsOfflineMode => CurrentMode == OperationMode.Offline;
+
     private GameType _selectedGame;
     public GameType SelectedGame
     {
@@ -82,14 +103,33 @@ public class MainViewModel : ViewModelBase
     public ObservableCollection<GameType> AvailableGames { get; }
     public ObservableCollection<string> AvailableCars { get; }
     public ObservableCollection<string> AvailableTracks { get; }
+    public ObservableCollection<string> DrivingStyleOptions { get; }
 
     // Commands
+    public ICommand SelectInGameModeCommand { get; }
+    public ICommand SelectOfflineModeCommand { get; }
+    public ICommand DetectGameCommand { get; }
     public ICommand ConnectCommand { get; }
     public ICommand StartRecordingCommand { get; }
     public ICommand StopRecordingCommand { get; }
     public ICommand AnalyzeSessionCommand { get; }
     public ICommand GenerateSetupCommand { get; }
+    public ICommand GenerateOfflineSetupCommand { get; }
     public ICommand ExportSetupCommand { get; }
+
+    private string _selectedDrivingStyle = "Balanced";
+    public string SelectedDrivingStyle
+    {
+        get => _selectedDrivingStyle;
+        set => SetProperty(ref _selectedDrivingStyle, value);
+    }
+
+    private CarSetup? _lastGeneratedSetup;
+    public CarSetup? LastGeneratedSetup
+    {
+        get => _lastGeneratedSetup;
+        set => SetProperty(ref _lastGeneratedSetup, value);
+    }
 
     public MainViewModel(
         ISimulatorConnector acConnector,
@@ -101,6 +141,7 @@ public class MainViewModel : ViewModelBase
         _aceConnector = aceConnector;
         _telemetryAnalyzer = telemetryAnalyzer;
         _setupGenerator = setupGenerator;
+        _presetRepository = new PresetDataRepository();
 
         // Initialize collections
         AvailableGames = new ObservableCollection<GameType>
@@ -110,17 +151,92 @@ public class MainViewModel : ViewModelBase
         };
         AvailableCars = new ObservableCollection<string>();
         AvailableTracks = new ObservableCollection<string>();
+        DrivingStyleOptions = new ObservableCollection<string>
+        {
+            "Balanced",
+            "Aggressive",
+            "Smooth",
+            "Oversteery",
+            "Understeery"
+        };
 
         // Initialize commands
-        ConnectCommand = new RelayCommand(_ => ConnectToSimulator(), _ => !IsConnected);
+        SelectInGameModeCommand = new RelayCommand(_ => SelectInGameMode());
+        SelectOfflineModeCommand = new RelayCommand(_ => SelectOfflineMode());
+        DetectGameCommand = new RelayCommand(_ => DetectRunningGame());
+        ConnectCommand = new RelayCommand(_ => ConnectToSimulator(), _ => IsInGameMode && !IsConnected);
         StartRecordingCommand = new RelayCommand(_ => StartRecording(), _ => IsConnected && !IsRecording);
         StopRecordingCommand = new RelayCommand(_ => StopRecording(), _ => IsRecording);
         AnalyzeSessionCommand = new RelayCommand(_ => AnalyzeSession(), _ => _sessionData.Count > 0);
         GenerateSetupCommand = new RelayCommand(_ => GenerateSetup(), _ => LastAnalysis != null);
-        ExportSetupCommand = new RelayCommand(_ => ExportSetup(), _ => LastAnalysis != null);
+        GenerateOfflineSetupCommand = new RelayCommand(_ => GenerateOfflineSetup(), _ => IsOfflineMode && !string.IsNullOrEmpty(SelectedCar) && !string.IsNullOrEmpty(SelectedTrack));
+        ExportSetupCommand = new RelayCommand(_ => ExportSetup(), _ => LastGeneratedSetup != null);
 
-        // Default selection
-        SelectedGame = GameType.AssettoCorsaOriginal;
+        // Auto-detect game on startup
+        DetectRunningGame();
+    }
+
+    private void SelectInGameMode()
+    {
+        CurrentMode = OperationMode.InGame;
+        StatusMessage = "In-Game mode selected. Connect to running simulator to read telemetry.";
+    }
+
+    private void SelectOfflineMode()
+    {
+        CurrentMode = OperationMode.Offline;
+        StatusMessage = "Offline mode selected. Select car and track to generate preset setup.";
+        LoadOfflineData();
+    }
+
+    private void DetectRunningGame()
+    {
+        var (isRunning, detectedGame) = ProcessDetector.DetectRunningSimulator();
+        
+        if (isRunning && detectedGame.HasValue)
+        {
+            SelectedGame = detectedGame.Value;
+            CurrentMode = OperationMode.InGame;
+            StatusMessage = $"{detectedGame.Value} detected running. Switched to In-Game mode.";
+            
+            MessageBox.Show(
+                $"{detectedGame.Value} is currently running!\n\nThe application has been set to In-Game mode.\nClick 'Connect to Simulator' to start reading telemetry.",
+                "Game Detected",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        else
+        {
+            CurrentMode = OperationMode.Offline;
+            StatusMessage = "No simulator detected. Using Offline mode with preset data.";
+        }
+    }
+
+    private void LoadOfflineData()
+    {
+        // Load preset car and track lists
+        AvailableCars.Clear();
+        AvailableTracks.Clear();
+
+        foreach (var car in _presetRepository.GetAvailableCars())
+            AvailableCars.Add(car);
+
+        foreach (var track in _presetRepository.GetAvailableTracks())
+            AvailableTracks.Add(track);
+
+        if (AvailableCars.Count > 0)
+            SelectedCar = AvailableCars[0];
+
+        if (AvailableTracks.Count > 0)
+            SelectedTrack = AvailableTracks[0];
+    }
+
+    private void UpdateUIForMode()
+    {
+        if (IsOfflineMode)
+        {
+            LoadOfflineData();
+        }
     }
 
     private async void ConnectToSimulator()
@@ -266,15 +382,16 @@ public class MainViewModel : ViewModelBase
             return;
         }
 
-        StatusMessage = "Generating optimized setup...";
+        StatusMessage = "Generating optimized setup from telemetry...";
 
         try
         {
             var setup = _setupGenerator.GenerateSetup(LastAnalysis, SelectedCar, SelectedTrack, SelectedGame);
-            StatusMessage = "Setup generated successfully!";
+            LastGeneratedSetup = setup;
+            StatusMessage = "Setup generated successfully from telemetry analysis!";
 
             MessageBox.Show(
-                $"Setup Generated!\n\n" +
+                $"Setup Generated from Telemetry!\n\n" +
                 $"Car: {setup.CarName}\n" +
                 $"Track: {setup.TrackName}\n\n" +
                 $"Tire Pressures:\n" +
@@ -297,9 +414,63 @@ public class MainViewModel : ViewModelBase
         }
     }
 
+    private void GenerateOfflineSetup()
+    {
+        if (string.IsNullOrEmpty(SelectedCar) || string.IsNullOrEmpty(SelectedTrack))
+        {
+            MessageBox.Show("Please select both car and track.", "Missing Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        StatusMessage = "Generating preset-based setup for offline mode...";
+
+        try
+        {
+            var setup = _setupGenerator.GenerateOfflineSetup(
+                SelectedCar, 
+                SelectedTrack, 
+                SelectedGame, 
+                SelectedDrivingStyle);
+            
+            LastGeneratedSetup = setup;
+            StatusMessage = "Offline setup generated successfully!";
+
+            MessageBox.Show(
+                $"Preset Setup Generated!\n\n" +
+                $"Car: {setup.CarName}\n" +
+                $"Track: {setup.TrackName}\n" +
+                $"Driving Style: {SelectedDrivingStyle}\n\n" +
+                $"This setup is based on:\n" +
+                $"• Car characteristics from specifications\n" +
+                $"• Track layout and characteristics\n" +
+                $"• Your selected driving style preference\n" +
+                $"• Known physics models and best practices\n\n" +
+                $"Tire Pressures:\n" +
+                $"  FL: {setup.Tires.FrontLeftPressure:F1} PSI\n" +
+                $"  FR: {setup.Tires.FrontRightPressure:F1} PSI\n" +
+                $"  RL: {setup.Tires.RearLeftPressure:F1} PSI\n" +
+                $"  RR: {setup.Tires.RearRightPressure:F1} PSI\n\n" +
+                $"Suspension:\n" +
+                $"  Front Spring: {setup.Suspension.FrontSpringRate:F1} N/mm\n" +
+                $"  Rear Spring: {setup.Suspension.RearSpringRate:F1} N/mm\n\n" +
+                $"Camber:\n" +
+                $"  Front: {setup.Alignment.FrontLeftCamber:F1}°\n" +
+                $"  Rear: {setup.Alignment.RearLeftCamber:F1}°\n\n" +
+                $"Ready to export!",
+                "Preset Setup Generated",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Offline setup generation error: {ex.Message}";
+            MessageBox.Show($"Error generating offline setup: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private async void ExportSetup()
     {
-        if (LastAnalysis == null || string.IsNullOrEmpty(SelectedCar) || string.IsNullOrEmpty(SelectedTrack))
+        if (LastGeneratedSetup == null)
         {
             MessageBox.Show("Please generate a setup first.", "No Setup", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
@@ -307,8 +478,6 @@ public class MainViewModel : ViewModelBase
 
         try
         {
-            var setup = _setupGenerator.GenerateSetup(LastAnalysis, SelectedCar, SelectedTrack, SelectedGame);
-            
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
                 FileName = $"{SelectedCar}_{SelectedTrack}_setup",
@@ -318,7 +487,7 @@ public class MainViewModel : ViewModelBase
 
             if (dialog.ShowDialog() == true)
             {
-                var success = await _setupGenerator.ExportSetupAsync(setup, dialog.FileName);
+                var success = await _setupGenerator.ExportSetupAsync(LastGeneratedSetup, dialog.FileName);
                 
                 if (success)
                 {
