@@ -427,88 +427,93 @@ public class MainViewModel : ViewModelBase
 
         try
         {
-            // Create HTTP client for online providers
-            using var httpClient = new HttpClient();
-            httpClient.Timeout = TimeSpan.FromSeconds(30);
-
-            // Create aggregator with all available providers
-            var aggregator = AssettoApp.OnlineData.SetupDataAggregator.CreateWithAllProviders(
-                httpClient,
-                _presetRepository,
-                _setupGenerator);
-
-            // Check if online data is available
-            var onlineAvailable = await aggregator.IsOnlineDataAvailableAsync();
-            var providerStatus = await aggregator.GetProviderStatusAsync();
-
-            // Generate setup with confidence scoring
-            var (setup, confidence) = await aggregator.GenerateSetupWithConfidenceAsync(
-                SelectedGame,
-                SelectedCar,
-                SelectedTrack,
-                SelectedDrivingStyle);
-            
-            LastGeneratedSetup = setup;
-            StatusMessage = "Setup generated successfully!";
-
-            // Build data sources message
-            var dataSourcesText = "Data Sources:\n";
-            if (onlineAvailable)
-            {
-                dataSourcesText += "• Online setup databases (active):\n";
-                foreach (var provider in providerStatus)
-                {
-                    var status = provider.Value ? "✓ Available" : "✗ Unavailable";
-                    dataSourcesText += $"  - {provider.Key}: {status}\n";
-                }
-            }
-            else
-            {
-                dataSourcesText += "• Online setup databases:\n";
-                dataSourcesText += "  - RaceDepartment: Framework ready (configure in setup_sources.json)\n";
-                dataSourcesText += "  - Setup Market: Framework ready (configure in setup_sources.json)\n";
-                dataSourcesText += "  - Custom sources: Configure in %APPDATA%\\AssettoApp\\setup_sources.json\n";
-            }
-            dataSourcesText += "• Local presets and physics models\n";
-            dataSourcesText += "• Track characteristics database\n";
-
-            if (confidence.MissingDataSources.Count > 0)
-            {
-                dataSourcesText += "\nNotes:\n";
-                foreach (var note in confidence.MissingDataSources)
-                {
-                    dataSourcesText += $"• {note}\n";
-                }
-            }
-
-            MessageBox.Show(
-                $"Setup Generated (Online Analysis Mode)!\n\n" +
-                $"Car: {setup.CarName}\n" +
-                $"Track: {setup.TrackName}\n" +
-                $"Driving Style: {SelectedDrivingStyle}\n\n" +
-                dataSourcesText + "\n" +
-                $"Tire Pressures:\n" +
-                $"  FL: {setup.Tires.FrontLeftPressure:F1} PSI\n" +
-                $"  FR: {setup.Tires.FrontRightPressure:F1} PSI\n" +
-                $"  RL: {setup.Tires.RearLeftPressure:F1} PSI\n" +
-                $"  RR: {setup.Tires.RearRightPressure:F1} PSI\n\n" +
-                $"Suspension:\n" +
-                $"  Front Spring: {setup.Suspension.FrontSpringRate:F1} N/mm\n" +
-                $"  Rear Spring: {setup.Suspension.RearSpringRate:F1} N/mm\n\n" +
-                $"Camber:\n" +
-                $"  Front: {setup.Alignment.FrontLeftCamber:F1}°\n" +
-                $"  Rear: {setup.Alignment.RearLeftCamber:F1}°\n\n" +
-                $"Confidence: {confidence.RecommendationQuality} ({confidence.OverallScore:P0})\n" +
-                $"Ready to export!",
-                "Setup Generated",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            await GenerateOnlineSetupAsync();
         }
         catch (Exception ex)
         {
             StatusMessage = $"Setup generation error: {ex.Message}";
             MessageBox.Show($"Error generating setup: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    private async Task GenerateOnlineSetupAsync()
+    {
+        // Create HTTP client for online providers
+        using var httpClient = new HttpClient();
+        httpClient.Timeout = TimeSpan.FromSeconds(30);
+
+        // Create aggregator with all available providers
+        var aggregator = AssettoApp.OnlineData.SetupDataAggregator.CreateWithAllProviders(
+            httpClient,
+            _presetRepository,
+            _setupGenerator);
+
+        // Check if online data is available
+        var onlineAvailable = await aggregator.IsOnlineDataAvailableAsync();
+        var providerStatus = await aggregator.GetProviderStatusAsync();
+
+        // Generate setup with confidence scoring
+        var (setup, confidence) = await aggregator.GenerateSetupWithConfidenceAsync(
+            SelectedGame,
+            SelectedCar,
+            SelectedTrack,
+            SelectedDrivingStyle);
+        
+        LastGeneratedSetup = setup;
+        StatusMessage = "Setup generated successfully!";
+
+        // Build data sources message
+        var dataSourcesText = "Data Sources:\n";
+        if (onlineAvailable)
+        {
+            dataSourcesText += "• Online setup databases (active):\n";
+            foreach (var provider in providerStatus)
+            {
+                var status = provider.Value ? "✓ Available" : "✗ Unavailable";
+                dataSourcesText += $"  - {provider.Key}: {status}\n";
+            }
+        }
+        else
+        {
+            dataSourcesText += "• Online setup databases:\n";
+            dataSourcesText += "  - RaceDepartment: Framework ready (configure in setup_sources.json)\n";
+            dataSourcesText += "  - Setup Market: Framework ready (configure in setup_sources.json)\n";
+            dataSourcesText += "  - Custom sources: Configure in %APPDATA%\\AssettoApp\\setup_sources.json\n";
+        }
+        dataSourcesText += "• Local presets and physics models\n";
+        dataSourcesText += "• Track characteristics database\n";
+
+        if (confidence.MissingDataSources.Count > 0)
+        {
+            dataSourcesText += "\nNotes:\n";
+            foreach (var note in confidence.MissingDataSources)
+            {
+                dataSourcesText += $"• {note}\n";
+            }
+        }
+
+        MessageBox.Show(
+            $"Setup Generated (Online Analysis Mode)!\n\n" +
+            $"Car: {setup.CarName}\n" +
+            $"Track: {setup.TrackName}\n" +
+            $"Driving Style: {SelectedDrivingStyle}\n\n" +
+            dataSourcesText + "\n" +
+            $"Tire Pressures:\n" +
+            $"  FL: {setup.Tires.FrontLeftPressure:F1} PSI\n" +
+            $"  FR: {setup.Tires.FrontRightPressure:F1} PSI\n" +
+            $"  RL: {setup.Tires.RearLeftPressure:F1} PSI\n" +
+            $"  RR: {setup.Tires.RearRightPressure:F1} PSI\n\n" +
+            $"Suspension:\n" +
+            $"  Front Spring: {setup.Suspension.FrontSpringRate:F1} N/mm\n" +
+            $"  Rear Spring: {setup.Suspension.RearSpringRate:F1} N/mm\n\n" +
+            $"Camber:\n" +
+            $"  Front: {setup.Alignment.FrontLeftCamber:F1}°\n" +
+            $"  Rear: {setup.Alignment.RearLeftCamber:F1}°\n\n" +
+            $"Confidence: {confidence.RecommendationQuality} ({confidence.OverallScore:P0})\n" +
+            $"Ready to export!",
+            "Setup Generated",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
     }
 
     private async void ExportSetup()

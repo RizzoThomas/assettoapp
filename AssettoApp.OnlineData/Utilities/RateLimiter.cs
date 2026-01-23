@@ -22,52 +22,58 @@ public class RateLimiter
     /// </summary>
     public async Task WaitIfNeededAsync(CancellationToken cancellationToken = default)
     {
-        await Task.Run(() =>
+        int delayMs = 0;
+        
+        lock (_lock)
         {
-            lock (_lock)
+            var now = DateTime.UtcNow;
+
+            // Ensure minimum delay between requests
+            var timeSinceLastRequest = now - _lastRequestTime;
+            if (timeSinceLastRequest.TotalMilliseconds < _minDelayMs)
             {
-                var now = DateTime.UtcNow;
-
-                // Ensure minimum delay between requests
-                var timeSinceLastRequest = now - _lastRequestTime;
-                if (timeSinceLastRequest.TotalMilliseconds < _minDelayMs)
-                {
-                    var delayNeeded = _minDelayMs - (int)timeSinceLastRequest.TotalMilliseconds;
-                    Thread.Sleep(delayNeeded);
-                    now = DateTime.UtcNow;
-                }
-
-                // Remove timestamps older than 1 minute
-                var oneMinuteAgo = now.AddMinutes(-1);
-                while (_requestTimestamps.Count > 0 && _requestTimestamps.Peek() < oneMinuteAgo)
-                {
-                    _requestTimestamps.Dequeue();
-                }
-
-                // Check if we've exceeded requests per minute
-                if (_requestTimestamps.Count >= _maxRequestsPerMinute)
-                {
-                    var oldestRequest = _requestTimestamps.Peek();
-                    var waitTime = (int)(60000 - (now - oldestRequest).TotalMilliseconds);
-                    if (waitTime > 0)
-                    {
-                        Thread.Sleep(waitTime);
-                        now = DateTime.UtcNow;
-                        
-                        // Clean up old timestamps again after waiting
-                        oneMinuteAgo = now.AddMinutes(-1);
-                        while (_requestTimestamps.Count > 0 && _requestTimestamps.Peek() < oneMinuteAgo)
-                        {
-                            _requestTimestamps.Dequeue();
-                        }
-                    }
-                }
-
-                // Record this request
-                _requestTimestamps.Enqueue(now);
-                _lastRequestTime = now;
+                delayMs = _minDelayMs - (int)timeSinceLastRequest.TotalMilliseconds;
             }
-        }, cancellationToken);
+
+            // Remove timestamps older than 1 minute
+            var oneMinuteAgo = now.AddMinutes(-1);
+            while (_requestTimestamps.Count > 0 && _requestTimestamps.Peek() < oneMinuteAgo)
+            {
+                _requestTimestamps.Dequeue();
+            }
+
+            // Check if we've exceeded requests per minute
+            if (_requestTimestamps.Count >= _maxRequestsPerMinute)
+            {
+                var oldestRequest = _requestTimestamps.Peek();
+                var waitTime = (int)(60000 - (now - oldestRequest).TotalMilliseconds);
+                if (waitTime > delayMs)
+                {
+                    delayMs = waitTime;
+                }
+            }
+        }
+
+        // Perform the actual delay outside the lock
+        if (delayMs > 0)
+        {
+            await Task.Delay(delayMs, cancellationToken);
+        }
+
+        // Record the request after delay
+        lock (_lock)
+        {
+            var now = DateTime.UtcNow;
+            _requestTimestamps.Enqueue(now);
+            _lastRequestTime = now;
+            
+            // Clean up old timestamps again
+            var oneMinuteAgo = now.AddMinutes(-1);
+            while (_requestTimestamps.Count > 0 && _requestTimestamps.Peek() < oneMinuteAgo)
+            {
+                _requestTimestamps.Dequeue();
+            }
+        }
     }
 
     /// <summary>
