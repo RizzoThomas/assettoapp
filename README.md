@@ -125,10 +125,17 @@ AssettoApp/
 
 ## Documentation
 
-- **[OFFLINE_MODE_IT.md](OFFLINE_MODE_IT.md)** - Complete Italian documentation for Offline Mode (Mode B)
+### 🇮🇹 Italian Documentation
+- **[SETUP_DA_ZERO_IT.md](SETUP_DA_ZERO_IT.md)** - 🆕 Complete guide to clone and setup from scratch (Italian)
+- **[QUICK_START_IT.md](QUICK_START_IT.md)** - 🆕 Quick reference card (Italian)
+- **[BUILD_IT.md](BUILD_IT.md)** - Build instructions (Italian)
+- **[ACE_INTEGRATION_IT.md](ACE_INTEGRATION_IT.md)** - ACE integration guide (Italian)
+- **[OFFLINE_MODE_IT.md](OFFLINE_MODE_IT.md)** - Offline Mode documentation (Italian)
+- **[IMPLEMENTAZIONE_IT.md](IMPLEMENTAZIONE_IT.md)** - Implementation summary (Italian)
+
+### 🇬🇧 English Documentation
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - Complete technical architecture and API documentation
 - **[BUILD.md](BUILD.md)** - Detailed build and deployment instructions
-- **[IMPLEMENTAZIONE_IT.md](IMPLEMENTAZIONE_IT.md)** - Italian implementation summary
 - **[PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)** - Project file inventory and metrics
 
 ## License
