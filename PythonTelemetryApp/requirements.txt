@@ -1,0 +1,18 @@
+# Python Requirements for ACE Telemetry App
+
+# GUI Framework
+customtkinter==5.2.1
+Pillow==10.2.0
+
+# Data Processing
+numpy==1.26.3
+pandas==2.2.0
+
+# Logging
+loguru==0.7.2
+
+# Memory access (Windows only)
+pywin32==306; sys_platform == 'win32'
+
+# Build tool
+pyinstaller==6.3.0
