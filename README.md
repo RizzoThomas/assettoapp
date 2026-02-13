@@ -103,7 +103,11 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for complete build instructions and techn
 ## Known Limitations
 
 ### Assetto Corsa EVO
-**IMPORTANT**: ACE is in early access and doesn't yet provide public telemetry API access. The ACE connector is implemented as a framework but will not function until Kunos releases telemetry support.
+**UPDATE**: ACE shared memory support has been implemented! The connector now:
+- ✅ Attempts to connect via multiple shared memory patterns
+- ✅ Reads telemetry data when ACE exposes it
+- ✅ Automatically detects selected car and track
+- ⚠️ **Note**: Full functionality depends on ACE exposing telemetry API (may require game updates)
 
 ### Assetto Corsa Original
 Fully functional using official shared memory API. Some advanced aerodynamic data is not exposed by AC's telemetry system.
@@ -121,10 +125,26 @@ AssettoApp/
 
 ## Documentation
 
-- **[OFFLINE_MODE_IT.md](OFFLINE_MODE_IT.md)** - Complete Italian documentation for Offline Mode (Mode B)
+### 🇮🇹 Italian Documentation
+
+#### Setup & Usage
+- **[SETUP_DA_ZERO_IT.md](SETUP_DA_ZERO_IT.md)** - 🆕 Complete guide to clone and setup from scratch
+- **[QUICK_START_IT.md](QUICK_START_IT.md)** - 🆕 Quick reference card
+- **[BUILD_IT.md](BUILD_IT.md)** - Build instructions
+
+#### ACE Integration
+- **[ACE_INTEGRATION_IT.md](ACE_INTEGRATION_IT.md)** - ACE integration guide (shared memory)
+- **[ACE_INJECTOR_GUIDE_IT.md](ACE_INJECTOR_GUIDE_IT.md)** - 🔥 **NEW**: DLL injection for ACE Update 0.5
+- **[ACE_REVERSE_ENGINEERING_GUIDE_IT.md](ACE_REVERSE_ENGINEERING_GUIDE_IT.md)** - 🔥 **NEW**: How to find memory patterns
+- **[ACE_DLL_IMPLEMENTATION_SUMMARY_IT.md](ACE_DLL_IMPLEMENTATION_SUMMARY_IT.md)** - 🔥 **NEW**: Implementation summary
+
+#### Other Guides
+- **[OFFLINE_MODE_IT.md](OFFLINE_MODE_IT.md)** - Offline Mode documentation
+- **[IMPLEMENTAZIONE_IT.md](IMPLEMENTAZIONE_IT.md)** - Implementation summary
+
+### 🇬🇧 English Documentation
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - Complete technical architecture and API documentation
 - **[BUILD.md](BUILD.md)** - Detailed build and deployment instructions
-- **[IMPLEMENTAZIONE_IT.md](IMPLEMENTAZIONE_IT.md)** - Italian implementation summary
 - **[PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)** - Project file inventory and metrics
 
 ## License

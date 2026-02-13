@@ -140,8 +140,13 @@ public class AssettoCorساConnector : ISimulatorConnector
     {
         await Task.CompletedTask;
         
-        // In a real implementation, this would scan the AC installation directory
-        // For now, return a sample list of popular AC cars
+        // If connected and have static info, return currently selected car
+        if (_staticInfo != null && !string.IsNullOrEmpty(_staticInfo.Value.CarModel))
+        {
+            return new List<string> { _staticInfo.Value.CarModel };
+        }
+        
+        // Otherwise return sample list of popular AC cars
         return new List<string>
         {
             "ferrari_458_gt2",
@@ -158,8 +163,13 @@ public class AssettoCorساConnector : ISimulatorConnector
     {
         await Task.CompletedTask;
         
-        // In a real implementation, this would scan the AC installation directory
-        // Sample list of popular AC tracks
+        // If connected and have static info, return currently selected track
+        if (_staticInfo != null && !string.IsNullOrEmpty(_staticInfo.Value.Track))
+        {
+            return new List<string> { _staticInfo.Value.Track };
+        }
+        
+        // Otherwise return sample list of popular AC tracks
         return new List<string>
         {
             "spa",
@@ -172,5 +182,23 @@ public class AssettoCorساConnector : ISimulatorConnector
             "barcelona",
             "red_bull_ring"
         };
+    }
+    
+    /// <summary>
+    /// Get the currently selected car from the game
+    /// Returns null if not connected or car info not available
+    /// </summary>
+    public string? GetCurrentCar()
+    {
+        return _staticInfo?.CarModel;
+    }
+    
+    /// <summary>
+    /// Get the currently selected track from the game
+    /// Returns null if not connected or track info not available
+    /// </summary>
+    public string? GetCurrentTrack()
+    {
+        return _staticInfo?.Track;
     }
 }
