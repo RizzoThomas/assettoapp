@@ -1,6 +1,6 @@
 """
-Main Application Entry Point
-Assetto Corsa EVO - Python Telemetry Application (Fixed Version)
+Main Application Entry Point V3
+Assetto Corsa EVO - Python Telemetry Application (Enhanced Version)
 """
 
 import sys
@@ -23,25 +23,21 @@ from telemetry.observer import TelemetryManager
 from telemetry.lock_detector import LockUpDetector
 from analysis.lap_comparison import LapComparison
 from setup.setup_manager import SetupManager
-from gui.main_window import MainWindow
+from gui.main_window_v3 import MainWindowV3
 
 
 def main():
     """Main application entry point"""
     logger.info("="*60)
-    logger.info("ACE Telemetry Application Starting (Fixed Version)")
+    logger.info("ACE Telemetry Application V3 Starting (Enhanced)")
     logger.info("="*60)
     
     try:
-        # NOTE: ACEConnector is now created inside MainWindow
-        # This allows for better connection management
-        
         # Initialize telemetry manager (Observer pattern)
-        # We'll pass None as data_acquisition since MainWindow creates ACEConnector
         telemetry_manager = TelemetryManager(None)
         
-        # Initialize lock-up detector
-        lock_detector = LockUpDetector(slip_threshold=0.15, brake_threshold=0.05)
+        # Initialize lock-up detector (threshold 0.2 as requested)
+        lock_detector = LockUpDetector(slip_threshold=0.2, brake_threshold=0.05)
         
         # Initialize lap comparison
         lap_comparison = LapComparison(num_sectors=3)
@@ -53,16 +49,16 @@ def main():
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("blue")
         
-        # Create and run GUI (with new ACE connector integrated)
-        app = MainWindow(
+        # Create and run enhanced GUI
+        app = MainWindowV3(
             telemetry_manager=telemetry_manager,
             lock_detector=lock_detector,
             lap_comparison=lap_comparison,
             setup_manager=setup_manager
         )
         
-        logger.info("GUI initialized with ACE connector, starting main loop")
-        app.mainloop()
+        logger.info("Enhanced GUI initialized, starting main loop")
+        app.run()
         
     except Exception as e:
         logger.exception(f"Fatal error in main application: {e}")
