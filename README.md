@@ -126,12 +126,21 @@ AssettoApp/
 ## Documentation
 
 ### 🇮🇹 Italian Documentation
-- **[SETUP_DA_ZERO_IT.md](SETUP_DA_ZERO_IT.md)** - 🆕 Complete guide to clone and setup from scratch (Italian)
-- **[QUICK_START_IT.md](QUICK_START_IT.md)** - 🆕 Quick reference card (Italian)
-- **[BUILD_IT.md](BUILD_IT.md)** - Build instructions (Italian)
-- **[ACE_INTEGRATION_IT.md](ACE_INTEGRATION_IT.md)** - ACE integration guide (Italian)
-- **[OFFLINE_MODE_IT.md](OFFLINE_MODE_IT.md)** - Offline Mode documentation (Italian)
-- **[IMPLEMENTAZIONE_IT.md](IMPLEMENTAZIONE_IT.md)** - Implementation summary (Italian)
+
+#### Setup & Usage
+- **[SETUP_DA_ZERO_IT.md](SETUP_DA_ZERO_IT.md)** - 🆕 Complete guide to clone and setup from scratch
+- **[QUICK_START_IT.md](QUICK_START_IT.md)** - 🆕 Quick reference card
+- **[BUILD_IT.md](BUILD_IT.md)** - Build instructions
+
+#### ACE Integration
+- **[ACE_INTEGRATION_IT.md](ACE_INTEGRATION_IT.md)** - ACE integration guide (shared memory)
+- **[ACE_INJECTOR_GUIDE_IT.md](ACE_INJECTOR_GUIDE_IT.md)** - 🔥 **NEW**: DLL injection for ACE Update 0.5
+- **[ACE_REVERSE_ENGINEERING_GUIDE_IT.md](ACE_REVERSE_ENGINEERING_GUIDE_IT.md)** - 🔥 **NEW**: How to find memory patterns
+- **[ACE_DLL_IMPLEMENTATION_SUMMARY_IT.md](ACE_DLL_IMPLEMENTATION_SUMMARY_IT.md)** - 🔥 **NEW**: Implementation summary
+
+#### Other Guides
+- **[OFFLINE_MODE_IT.md](OFFLINE_MODE_IT.md)** - Offline Mode documentation
+- **[IMPLEMENTAZIONE_IT.md](IMPLEMENTAZIONE_IT.md)** - Implementation summary
 
 ### 🇬🇧 English Documentation
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - Complete technical architecture and API documentation

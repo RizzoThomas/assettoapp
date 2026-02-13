@@ -20,14 +20,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- UnmanagedExports for DLL entry points -->
-    <PackageReference Include="UnmanagedExports" Version="2.0.7" />
-    
-    <!-- Memory manipulation -->
-    <PackageReference Include="System.Memory" Version="4.5.5" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\AssettoApp.Core\AssettoApp.Core.csproj" />
   </ItemGroup>
 

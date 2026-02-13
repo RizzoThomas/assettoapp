@@ -7,6 +7,12 @@ namespace AssettoApp.ACEInjector;
 /// <summary>
 /// Main entry point for the injectable DLL
 /// This DLL gets injected into the Assetto Corsa Evo process
+/// 
+/// NOTE: This is a PROOF-OF-CONCEPT framework.
+/// For production, requires either:
+/// 1. C++/CLI wrapper with actual DllMain
+/// 2. Native C++ DLL with managed exports
+/// 3. Different injection technique (SetWindowsHookEx, etc.)
 /// </summary>
 public static class InjectorMain
 {
@@ -15,32 +21,10 @@ public static class InjectorMain
     private static IntPtr _gameBaseAddress = IntPtr.Zero;
 
     /// <summary>
-    /// DLL entry point called when DLL is loaded into the process
-    /// </summary>
-    [DllExport("DllMain", CallingConvention = CallingConvention.StdCall)]
-    public static bool DllMain(IntPtr hinstDLL, uint fdwReason, IntPtr lpvReserved)
-    {
-        const uint DLL_PROCESS_ATTACH = 1;
-        const uint DLL_PROCESS_DETACH = 0;
-
-        switch (fdwReason)
-        {
-            case DLL_PROCESS_ATTACH:
-                Initialize();
-                break;
-
-            case DLL_PROCESS_DETACH:
-                Shutdown();
-                break;
-        }
-
-        return true;
-    }
-
-    /// <summary>
     /// Initialize the injector
+    /// Called manually after injection or from a C++ stub
     /// </summary>
-    private static void Initialize()
+    public static void Initialize()
     {
         try
         {
@@ -74,7 +58,7 @@ public static class InjectorMain
     /// <summary>
     /// Shutdown and cleanup
     /// </summary>
-    private static void Shutdown()
+    public static void Shutdown()
     {
         _running = false;
         _telemetryThread?.Join(1000);
@@ -123,10 +107,8 @@ public static class InjectorMain
     }
 
     /// <summary>
-    /// Export function to get telemetry data
-    /// Can be called from the main app via function pointer
+    /// Get telemetry data (can be called via function pointer or IPC)
     /// </summary>
-    [DllExport("GetTelemetryData", CallingConvention = CallingConvention.Cdecl)]
     public static IntPtr GetTelemetryData()
     {
         // Return pointer to shared telemetry structure
@@ -135,9 +117,8 @@ public static class InjectorMain
     }
 
     /// <summary>
-    /// Export function to check if injector is alive
+    /// Check if injector is alive
     /// </summary>
-    [DllExport("IsInjectorActive", CallingConvention = CallingConvention.Cdecl)]
     public static bool IsInjectorActive()
     {
         return _running;
@@ -145,11 +126,19 @@ public static class InjectorMain
 
     private static void LogInfo(string message)
     {
-        File.AppendAllText("ace_injector.log", $"[INFO] {DateTime.Now:HH:mm:ss} {message}\n");
+        try
+        {
+            File.AppendAllText("ace_injector.log", $"[INFO] {DateTime.Now:HH:mm:ss} {message}\n");
+        }
+        catch { /* Ignore logging errors */ }
     }
 
     private static void LogError(string message)
     {
-        File.AppendAllText("ace_injector.log", $"[ERROR] {DateTime.Now:HH:mm:ss} {message}\n");
+        try
+        {
+            File.AppendAllText("ace_injector.log", $"[ERROR] {DateTime.Now:HH:mm:ss} {message}\n");
+        }
+        catch { /* Ignore logging errors */ }
     }
 }
