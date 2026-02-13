@@ -1,6 +1,6 @@
 """
 Main Application Entry Point
-Assetto Corsa EVO - Python Telemetry Application
+Assetto Corsa EVO - Python Telemetry Application (Fixed Version)
 """
 
 import sys
@@ -19,7 +19,6 @@ logger.add(
 logger.add(sys.stderr, level="INFO")
 
 # Import modules
-from telemetry.data_acquisition import ACEDataAcquisition
 from telemetry.observer import TelemetryManager
 from telemetry.lock_detector import LockUpDetector
 from analysis.lap_comparison import LapComparison
@@ -30,15 +29,16 @@ from gui.main_window import MainWindow
 def main():
     """Main application entry point"""
     logger.info("="*60)
-    logger.info("ACE Telemetry Application Starting")
+    logger.info("ACE Telemetry Application Starting (Fixed Version)")
     logger.info("="*60)
     
     try:
-        # Initialize data acquisition
-        data_acquisition = ACEDataAcquisition()
+        # NOTE: ACEConnector is now created inside MainWindow
+        # This allows for better connection management
         
         # Initialize telemetry manager (Observer pattern)
-        telemetry_manager = TelemetryManager(data_acquisition)
+        # We'll pass None as data_acquisition since MainWindow creates ACEConnector
+        telemetry_manager = TelemetryManager(None)
         
         # Initialize lock-up detector
         lock_detector = LockUpDetector(slip_threshold=0.15, brake_threshold=0.05)
@@ -53,16 +53,15 @@ def main():
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("blue")
         
-        # Create and run GUI
+        # Create and run GUI (with new ACE connector integrated)
         app = MainWindow(
-            data_acquisition=data_acquisition,
             telemetry_manager=telemetry_manager,
             lock_detector=lock_detector,
             lap_comparison=lap_comparison,
             setup_manager=setup_manager
         )
         
-        logger.info("GUI initialized, starting main loop")
+        logger.info("GUI initialized with ACE connector, starting main loop")
         app.mainloop()
         
     except Exception as e:
