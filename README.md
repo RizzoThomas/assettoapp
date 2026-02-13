@@ -103,7 +103,11 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for complete build instructions and techn
 ## Known Limitations
 
 ### Assetto Corsa EVO
-**IMPORTANT**: ACE is in early access and doesn't yet provide public telemetry API access. The ACE connector is implemented as a framework but will not function until Kunos releases telemetry support.
+**UPDATE**: ACE shared memory support has been implemented! The connector now:
+- ✅ Attempts to connect via multiple shared memory patterns
+- ✅ Reads telemetry data when ACE exposes it
+- ✅ Automatically detects selected car and track
+- ⚠️ **Note**: Full functionality depends on ACE exposing telemetry API (may require game updates)
 
 ### Assetto Corsa Original
 Fully functional using official shared memory API. Some advanced aerodynamic data is not exposed by AC's telemetry system.
