@@ -24,10 +24,20 @@ class SetupManager:
     
     def _find_setup_directory(self) -> Optional[Path]:
         """Find ACE setup directory"""
-        # Try standard Windows Documents location
+        
+        # Priority 1: %LocalAppData%\AssettoCorsaEVO\Saved\SaveGames\
+        localappdata = os.getenv('LOCALAPPDATA')
+        if localappdata:
+            localappdata_path = Path(localappdata) / "AssettoCorsaEVO" / "Saved" / "SaveGames"
+            if localappdata_path.exists():
+                logger.info(f"Found ACE setup directory (LocalAppData): {localappdata_path}")
+                return localappdata_path
+        
+        # Priority 2: Documents\AssettoCorsaEVO\
         documents = Path.home() / "Documents"
         
         possible_paths = [
+            documents / "AssettoCorsaEVO" / "savedata" / "setups",
             documents / "Assetto Corsa EVO" / "savedata" / "setups",
             documents / "Assetto Corsa Evo" / "savedata" / "setups",
             documents / "AssettoCorساEVO" / "savedata" / "setups",
@@ -35,12 +45,13 @@ class SetupManager:
         
         for path in possible_paths:
             if path.exists():
-                logger.info(f"Found ACE setup directory: {path}")
+                logger.info(f"Found ACE setup directory (Documents): {path}")
                 return path
         
-        # If not found, use first path anyway (will be created)
-        logger.warning(f"ACE setup directory not found, will use: {possible_paths[0]}")
-        return possible_paths[0]
+        # If not found, use LocalAppData path (will be created)
+        default_path = Path(localappdata) / "AssettoCorsaEVO" / "Saved" / "SaveGames" if localappdata else possible_paths[0]
+        logger.warning(f"ACE setup directory not found, will use: {default_path}")
+        return default_path
     
     def set_track_and_car(self, track: str, car: str):
         """Set current track and car for setup operations"""
