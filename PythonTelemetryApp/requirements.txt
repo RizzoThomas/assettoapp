@@ -20,6 +20,9 @@ psutil==5.9.8
 # HTTP requests
 requests==2.31.0
 
+# WebSocket support
+websocket-client==1.7.0
+
 # Memory access (Windows only)
 pywin32==306; sys_platform == 'win32'
 
